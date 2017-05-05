@@ -69,19 +69,26 @@
 
 /******************************************************************************************************/
 
-static void requireMem(struct work_struct *);
-static DECLARE_WORK(requireMem_work,requireMem);
 
 
 
 long long int req = 0;
 
 
-//extern int uwb_est_unregister(u8 type, u8 event_high, u16 vendor, u16 product,const struct uwb_est_entry *entry, size_t entries);
-//extern void workGen(void);
+extern bool can_provide_mem;
+extern bool is_less_than_maxALM;
+extern bool enable_to_run_memAlloc;
+extern bool enable_WorkGen;
+
+
+extern Simple_rBuffer_Entry rBuffer[rBuffer_Size];
+
+static long long int CMA;
+static long long int AVM;
+
 extern void allocator_worker_gen(void);
 extern int do_sysinfo(struct sysinfo *info);
-
+/*
 static void requireMem(struct work_struct *ws)
 {
 	struct xenbus_transaction trans;
@@ -108,7 +115,7 @@ static void requireMem(struct work_struct *ws)
 
 }
 
-
+*/
 /******************************************************************************************************/
 
 struct scan_control {
@@ -3571,9 +3578,8 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 								     enable_to_run_memAlloc,\
 								     is_less_than_maxALM,\
 								     can_provide_mem);*/
-	allocator_worker_gen();
-	/*
-	if (enable_to_run_memAlloc && enable_SupCenter)
+	
+	if (enable_to_run_memAlloc)
 	{
 		tsk = current;
 		temp = ((long long int) tsk->mm->hiwater_rss) << 2;
@@ -3585,16 +3591,15 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 			//printk("CMA: %lld, temp: %lld\n",CMA,temp);
 			CMA = temp;
 			req = temp - AVM;
-		//	schedule_work(&requireMem_work);
 	 	}
 	
-		if (!gotoWorkGen)
+		if (!enable_WorkGen)
 		{
-			//workGen();	
-			gotoWorkGen = 1;
+			enable_WorkGen = 1;
+			allocator_worker_gen();
 		}
 	}
-	*/
+	
 }
 
 #ifdef CONFIG_HIBERNATION

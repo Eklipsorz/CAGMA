@@ -14,7 +14,7 @@
 #include <linux/memory.h>
 #include <linux/memory_hotplug.h>
 #include <linux/percpu-defs.h>
-#include <linux/Simple_rBuffer_Entry.h>
+#include <linux/Simple_rBuffer.h>
 
 #include <asm/page.h>
 #include <asm/pgalloc.h>
@@ -34,23 +34,16 @@
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
-
-bool gotoWorkGen = 0;
-bool enable_SupCenter = 0;
-
-long long int CMA = -1;
-long long int Mmax = 0 ;
-long long int AVM = 0;
+bool enable_WorkGen = 0;
 
 Simple_rBuffer_Entry rBuffer[rBuffer_Size];
+long long int Mmax = 0 ;
+
 
 EXPORT_SYMBOL_GPL(can_provide_mem);
 EXPORT_SYMBOL_GPL(is_less_than_maxALM);
 EXPORT_SYMBOL_GPL(enable_to_run_memAlloc);
-EXPORT_SYMBOL_GPL(enable_SupCenter);
-EXPORT_SYMBOL_GPL(gotoWorkGen);
-EXPORT_SYMBOL_GPL(AVM);
-EXPORT_SYMBOL_GPL(CMA);
+EXPORT_SYMBOL_GPL(enable_WorkGen);
 EXPORT_SYMBOL_GPL(Mmax);
 EXPORT_SYMBOL_GPL(rBuffer);
 
