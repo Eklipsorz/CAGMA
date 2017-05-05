@@ -48,6 +48,8 @@ EXPORT_SYMBOL_GPL(enable_WorkGen);
 EXPORT_SYMBOL_GPL(Mmax);
 EXPORT_SYMBOL_GPL(rBuffer);
 
+static int curr_step = 0;
+
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
 extern int do_sysinfo(struct sysinfo *info);
@@ -95,6 +97,19 @@ static void allocate(long long int AVM, long long int CMA)
 
 }
 
+static void reset_rBuffer(void)
+{
+	int i;
+
+	for(i = 0; i < rBuffer_Size; i++)
+	{
+		rBuffer[i].CMA = 0;
+		rBuffer[i].AVM = 0;	
+	}
+
+}
+
+
 static void allocator_process(struct work_struct *work)
 {
 	int i;
@@ -103,11 +118,12 @@ static void allocator_process(struct work_struct *work)
 	if (Is_AVM_Bigger())
 	{
 		enable_WorkGen = 0;
+		reset_rBuffer();
 		return;
 	}
 	else
 	{
-		for(i = 0; i < rBuffer_Size; i++)
+		for(i = curr_step; i < rBuffer_Size; i++)
 		{
 			CMA = rBuffer[i].CMA;
 			AVM = rBuffer[i].AVM;
@@ -117,6 +133,7 @@ static void allocator_process(struct work_struct *work)
 			else
 			{
 				allocate(CMA,AVM);			
+				curr_step = i + 1;
 				rBuffer[i].CMA = 0;
 				rBuffer[i].AVM = 0;
 			}
