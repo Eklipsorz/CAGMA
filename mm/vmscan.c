@@ -85,6 +85,7 @@ extern Simple_rBuffer_Entry rBuffer[rBuffer_Size];
 
 static long long int CMA;
 static long long int AVM;
+static int curr_step = 0;
 
 extern void allocator_worker_gen(void);
 extern int do_sysinfo(struct sysinfo *info);
@@ -3589,8 +3590,11 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 		if (is_less_than_maxALM && can_provide_mem && AVM < temp && CMA != temp)	
 		{
 			//printk("CMA: %lld, temp: %lld\n",CMA,temp);
-			CMA = temp;
-			req = temp - AVM;
+			rBuffer[curr_step].AVM = AVM;
+			rBuffer[curr_step].CMA = CMA;
+			curr_step = (curr_step + 1) % rBuffer_Size;
+			//	CMA = temp;
+			//	req = temp - AVM;
 	 	}
 	
 		if (!enable_WorkGen)

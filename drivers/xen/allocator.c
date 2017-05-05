@@ -50,18 +50,63 @@ EXPORT_SYMBOL_GPL(rBuffer);
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
 
+static int Is_AVM_Bigger(void)
+{
+	struct sysinfo sinfo;
+	long long int AVM,UMA;
+
+	do_sysinfo(&sinfo);
+	AVM = sinfo.freeram >> 10;
+	UMA = (sinfo.totalram >> 10 ) - AVM;
+	if (AVM > UMA)
+		return 1;
+	else
+		return 0;
+
+}
+
+static void allocate(long long int AVM, long long int CMA)
+{
+
+
+}
+
 static void allocator_process(struct work_struct *work)
 {
-	printk("Again\n");
-	schedule_delayed_work(&allocator_worker, 3000);
+	int i;
+	long long int CMA, AVM;
+
+	if (Is_AVM_Bigger())
+	{
+		enable_WorkGen = 0;
+		return;
+	}
+	else
+	{
+		for(i = 0; i < rBuffer_Size; i++)
+		{
+			CMA = rBuffer[i].CMA;
+			AVM = rBuffer[i].AVM;
+
+			if(!CMA || !AVM)
+				break;
+			else
+			{
+				allocate(CMA,AVM);			
+				rBuffer[i].CMA = 0;
+				rBuffer[i].AVM = 0;
+			}
+		}
+
+		schedule_delayed_work(&allocator_worker,30);
+	}
+	
 	
 }
 
 void allocator_worker_gen(void)
 {
-	printk("Generating task\n");
-	schedule_delayed_work(&allocator_worker, 10000);
-
+	schedule_delayed_work(&allocator_worker, 0);
 }
 
 EXPORT_SYMBOL_GPL(allocator_worker_gen);
