@@ -49,6 +49,7 @@ EXPORT_SYMBOL_GPL(rBuffer);
 
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
+extern int do_sysinfo(struct sysinfo *info);
 
 static int Is_AVM_Bigger(void)
 {
