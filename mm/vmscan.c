@@ -89,34 +89,7 @@ static int curr_step = 0;
 
 extern void allocator_worker_gen(void);
 extern int do_sysinfo(struct sysinfo *info);
-/*
-static void requireMem(struct work_struct *ws)
-{
-	struct xenbus_transaction trans;
-	long long int out2lld,new_target;
-	char *output;
 
-	xenbus_transaction_start(&trans);
-	output = (char *)xenbus_read(trans,"memory","target",NULL);
-	xenbus_transaction_end(trans, 0);
-
-	sscanf(output,"%lld",&out2lld);
-	//req = (req * (long long int)((Alloc_rate)*1024)) >> 10;
-	new_target = out2lld + req;
-	
-	if (new_target >= Mmax)
-	{
-		new_target = Mmax;	
-		is_less_than_maxALM = 0;
-	}
-	
-	xenbus_transaction_start(&trans);
-	xenbus_printf(trans, "memory","target", "%lld", new_target); 
-	xenbus_transaction_end(trans, 0);
-
-}
-
-*/
 /******************************************************************************************************/
 
 struct scan_control {
@@ -3597,9 +3570,9 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 			//	req = temp - AVM;
 	 	}
 	
-		if (!enable_WorkGen)
+		if (enable_WorkGen)
 		{
-			enable_WorkGen = 1;
+			enable_WorkGen = 0;
 			allocator_worker_gen();
 		}
 	}

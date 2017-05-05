@@ -35,7 +35,7 @@
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
-bool enable_WorkGen = 0;
+bool enable_WorkGen = 1;
 
 Simple_rBuffer_Entry rBuffer[rBuffer_Size];
 long long int Mmax = 0 ;
@@ -62,6 +62,7 @@ static int Is_AVM_Bigger(void)
 	do_sysinfo(&sinfo);
 	AVM = sinfo.freeram >> 10;
 	UMA = (sinfo.totalram >> 10 ) - AVM;
+	printk("UMA: %lld , AVM: %lld\n",UMA,AVM);
 	if (AVM > UMA)
 		return 1;
 	else
@@ -117,7 +118,7 @@ static void allocator_process(struct work_struct *work)
 
 	if (Is_AVM_Bigger())
 	{
-		enable_WorkGen = 0;
+		enable_WorkGen = 1;
 		reset_rBuffer();
 		return;
 	}
@@ -129,13 +130,17 @@ static void allocator_process(struct work_struct *work)
 			AVM = rBuffer[i].AVM;
 
 			if(!CMA || !AVM)
+			{
+				curr_step = i;
+				printk("none\n");
 				break;
+			}
 			else
 			{
-				allocate(CMA,AVM);			
-				curr_step = i + 1;
-				rBuffer[i].CMA = 0;
-				rBuffer[i].AVM = 0;
+				//allocate(CMA,AVM);			
+				printk("CMA: %lld, AVM: %lld\n",CMA,AVM);	
+				//rBuffer[i].CMA = 0;
+				//rBuffer[i].AVM = 0;
 			}
 		}
 
@@ -147,6 +152,7 @@ static void allocator_process(struct work_struct *work)
 
 void allocator_worker_gen(void)
 {
+	printk("first generate\n");
 	schedule_delayed_work(&allocator_worker, 0);
 }
 
