@@ -30,6 +30,7 @@
 #include <xen/balloon.h>
 #include <xen/features.h>
 #include <xen/page.h>
+#include <xen/xenbus.h>         /* update CMA with xenbus     */
 
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
@@ -68,6 +69,28 @@ static int Is_AVM_Bigger(void)
 
 static void allocate(long long int AVM, long long int CMA)
 {
+	struct xenbus_transaction trans;
+	long long int out2lld,new_target,req;
+	char *output;
+
+	xenbus_transaction_start(&trans);
+	output = (char *)xenbus_read(trans,"memory","target",NULL);
+	xenbus_transaction_end(trans, 0);
+
+	req = CMA - AVM;
+	sscanf(output,"%lld",&out2lld);
+	//req = (req * (long long int)((Alloc_rate)*1024)) >> 10;
+	new_target = out2lld + req;
+	
+	if (new_target >= Mmax)
+	{
+		new_target = Mmax;	
+		is_less_than_maxALM = 0;
+	}
+	
+	xenbus_transaction_start(&trans);
+	xenbus_printf(trans, "memory","target", "%lld", new_target); 
+	xenbus_transaction_end(trans, 0);
 
 
 }
