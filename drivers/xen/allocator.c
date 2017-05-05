@@ -37,7 +37,7 @@ bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
 bool enable_WorkGen = 1;
 
-Simple_rBuffer_Entry rBuffer[rBuffer_Size];
+Simple_rBuffer_Entry rBuffer;
 long long int Mmax = 0 ;
 
 
@@ -48,7 +48,6 @@ EXPORT_SYMBOL_GPL(enable_WorkGen);
 EXPORT_SYMBOL_GPL(Mmax);
 EXPORT_SYMBOL_GPL(rBuffer);
 
-static int curr_step = 0;
 
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
@@ -84,7 +83,7 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 	sscanf(output,"%lld",&out2lld);
 	//req = (req * (long long int)((Alloc_rate)*1024)) >> 10;
 	new_target = out2lld + req;
-	
+	printk("new_target:%lld \n",new_target);	
 	if (new_target >= Mmax)
 	{
 		new_target = Mmax;	
@@ -98,17 +97,6 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 
 }
 
-static void reset_rBuffer(void)
-{
-	int i;
-
-	for(i = 0; i < rBuffer_Size; i++)
-	{
-		rBuffer[i].CMA = 0;
-		rBuffer[i].AVM = 0;	
-	}
-
-}
 
 
 static void allocator_process(struct work_struct *work)
@@ -118,32 +106,17 @@ static void allocator_process(struct work_struct *work)
 	if (Is_AVM_Bigger())
 	{
 		enable_WorkGen = 1;
-		reset_rBuffer();
 		return;
 	}
 	else
 	{
-		//for(i = curr_step; i < rBuffer_Size; i++)
-		//{
-		CMAtemp = rBuffer[curr_step].CMA;
-		AVMtemp = rBuffer[curr_step].AVM;
+		CMAtemp = rBuffer.CMA;
+		AVMtemp = rBuffer.AVM;
 		
-		if ( !CMAtemp || !AVMtemp )
-		{
-			printk("none\n");
-		}
-		else
-		{
-			//allocate(CMA,AVM);			
-			printk("CMA: %lld, AVM: %lld\n", CMAtemp, AVMtemp);	
-			curr_step = ( curr_step + 1 ) % rBuffer_Size;
-			//rBuffer[i].CMA = 0;
-			//rBuffer[i].AVM = 0;
-		}
-
-		//}
-
-		schedule_delayed_work(&allocator_worker,30);
+		if ( CMAtemp > 0 && AVMtemp > 0)
+			allocate(AVMtemp,CMAtemp);			
+		//printk("CMA: %lld, AVM: %lld\n", CMAtemp, AVMtemp);	
+		schedule_delayed_work(&allocator_worker,300);
 	}
 	
 	

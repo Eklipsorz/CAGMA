@@ -81,11 +81,10 @@ extern bool enable_to_run_memAlloc;
 extern bool enable_WorkGen;
 
 
-extern Simple_rBuffer_Entry rBuffer[rBuffer_Size];
+extern Simple_rBuffer_Entry rBuffer;
 
 long long int CMA;
 static long long int AVM;
-static int curr_step = 0;
 
 EXPORT_SYMBOL_GPL(CMA);
 
@@ -3566,18 +3565,17 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 		{
 			CMA = temp;
 			//printk("CMA: %lld, temp: %lld\n",CMA,temp);
-			rBuffer[curr_step].AVM = AVM;
-			rBuffer[curr_step].CMA = CMA;
-			curr_step = (curr_step + 1) % rBuffer_Size;
+			rBuffer.AVM = AVM;
+			rBuffer.CMA = CMA;
 			//	CMA = temp;
 			//	req = temp - AVM;
+			if (enable_WorkGen)
+			{
+				enable_WorkGen = 0;
+				allocator_worker_gen();
+			}
 	 	}
 	
-		if (enable_WorkGen)
-		{
-			enable_WorkGen = 0;
-			allocator_worker_gen();
-		}
 	}
 	
 }
