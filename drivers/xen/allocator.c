@@ -70,7 +70,7 @@ static int Is_AVM_Bigger(void)
 
 }
 
-static void allocate(long long int AVM, long long int CMA)
+static void allocate(long long int AVMtemp, long long int CMAtemp)
 {
 	struct xenbus_transaction trans;
 	long long int out2lld,new_target,req;
@@ -80,7 +80,7 @@ static void allocate(long long int AVM, long long int CMA)
 	output = (char *)xenbus_read(trans,"memory","target",NULL);
 	xenbus_transaction_end(trans, 0);
 
-	req = CMA - AVM;
+	req = CMAtemp - AVMtemp;
 	sscanf(output,"%lld",&out2lld);
 	//req = (req * (long long int)((Alloc_rate)*1024)) >> 10;
 	new_target = out2lld + req;
@@ -113,8 +113,7 @@ static void reset_rBuffer(void)
 
 static void allocator_process(struct work_struct *work)
 {
-	int i;
-	long long int CMA, AVM;
+	long long int CMAtemp, AVMtemp;
 
 	if (Is_AVM_Bigger())
 	{
@@ -126,18 +125,17 @@ static void allocator_process(struct work_struct *work)
 	{
 		//for(i = curr_step; i < rBuffer_Size; i++)
 		//{
-		CMA = rBuffer[curr_step].CMA;
-		AVM = rBuffer[curr_step].AVM;
+		CMAtemp = rBuffer[curr_step].CMA;
+		AVMtemp = rBuffer[curr_step].AVM;
 		
-		if(!CMA || !AVM)
+		if ( !CMAtemp || !AVMtemp )
 		{
 			printk("none\n");
-			break;
 		}
 		else
 		{
 			//allocate(CMA,AVM);			
-			printk("CMA: %lld, AVM: %lld\n",CMA,AVM);	
+			printk("CMA: %lld, AVM: %lld\n", CMAtemp, AVMtemp);	
 			curr_step = ( curr_step + 1 ) % rBuffer_Size;
 			//rBuffer[i].CMA = 0;
 			//rBuffer[i].AVM = 0;
