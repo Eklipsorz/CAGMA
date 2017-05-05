@@ -62,7 +62,7 @@ static int Is_AVM_Bigger(void)
 	do_sysinfo(&sinfo);
 	AVM = sinfo.freeram >> 10;
 	UMA = (sinfo.totalram >> 10 ) - AVM;
-	printk("UMA: %lld , AVM: %lld\n",UMA,AVM);
+	
 	if (AVM > UMA)
 		return 1;
 	else
@@ -124,25 +124,26 @@ static void allocator_process(struct work_struct *work)
 	}
 	else
 	{
-		for(i = curr_step; i < rBuffer_Size; i++)
+		//for(i = curr_step; i < rBuffer_Size; i++)
+		//{
+		CMA = rBuffer[curr_step].CMA;
+		AVM = rBuffer[curr_step].AVM;
+		
+		if(!CMA || !AVM)
 		{
-			CMA = rBuffer[i].CMA;
-			AVM = rBuffer[i].AVM;
-
-			if(!CMA || !AVM)
-			{
-				curr_step = i;
-				printk("none\n");
-				break;
-			}
-			else
-			{
-				//allocate(CMA,AVM);			
-				printk("CMA: %lld, AVM: %lld\n",CMA,AVM);	
-				//rBuffer[i].CMA = 0;
-				//rBuffer[i].AVM = 0;
-			}
+			printk("none\n");
+			break;
 		}
+		else
+		{
+			//allocate(CMA,AVM);			
+			printk("CMA: %lld, AVM: %lld\n",CMA,AVM);	
+			curr_step = ( curr_step + 1 ) % rBuffer_Size;
+			//rBuffer[i].CMA = 0;
+			//rBuffer[i].AVM = 0;
+		}
+
+		//}
 
 		schedule_delayed_work(&allocator_worker,30);
 	}
