@@ -31,14 +31,16 @@
 #include <xen/features.h>
 #include <xen/page.h>
 #include <xen/xenbus.h>         /* update CMA with xenbus     */
+#define Alloc_rate 1.1
 
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
 bool enable_WorkGen = 1;
 
-Simple_rBuffer_Entry rBuffer;
-long long int Mmax = 0 ;
+long long int Mmax;
+long long int CMA;
+long long int count = 0;
 
 
 EXPORT_SYMBOL_GPL(can_provide_mem);
@@ -46,8 +48,7 @@ EXPORT_SYMBOL_GPL(is_less_than_maxALM);
 EXPORT_SYMBOL_GPL(enable_to_run_memAlloc);
 EXPORT_SYMBOL_GPL(enable_WorkGen);
 EXPORT_SYMBOL_GPL(Mmax);
-EXPORT_SYMBOL_GPL(rBuffer);
-
+EXPORT_SYMBOL_GPL(CMA);
 
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
@@ -101,11 +102,31 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 
 static void allocator_process(struct work_struct *work)
 {
-	long long int CMAtemp, AVMtemp;
+//	long long int CMAtemp, AVMtemp;	
+	struct task_struct *tsk;
+	long long int temp, AVM;
+	struct sysinfo sinfo;
 
+
+	do_sysinfo(&sinfo);
+	AVM = sinfo.freeram >> 10;
+	tsk = current;
+	temp = ((long long int) tsk->mm->hiwater_rss) << 2;
+	temp = (temp * (long long int)(Alloc_rate*1024)) >> 10;
+	
+	printk("temp: %lld\n", temp);
+	
+	if (AVM < temp && CMA != temp)	
+	{
+
+
+	}
+/*
 	if (Is_AVM_Bigger())
 	{
+		count++;
 		enable_WorkGen = 1;
+		printk("count:%lld \n",count);
 		return;
 	}
 	else
@@ -118,7 +139,7 @@ static void allocator_process(struct work_struct *work)
 		//printk("CMA: %lld, AVM: %lld\n", CMAtemp, AVMtemp);	
 		schedule_delayed_work(&allocator_worker,300);
 	}
-	
+*/	
 	
 }
 

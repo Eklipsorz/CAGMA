@@ -55,7 +55,7 @@
 #include <linux/Simple_rBuffer.h>
 #include "internal.h"
 
-#include <xen/xenbus.h>         /* update CMA with xenbus     */
+
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/vmscan.h>
@@ -65,31 +65,19 @@
 #include <asm/uaccess.h>
 #include <linux/buffer_head.h>
 
-#define Alloc_rate 1.1
+
 
 /******************************************************************************************************/
 
 
 
 
-long long int req = 0;
-
-
 extern bool can_provide_mem;
 extern bool is_less_than_maxALM;
 extern bool enable_to_run_memAlloc;
-extern bool enable_WorkGen;
-
-
-extern Simple_rBuffer_Entry rBuffer;
-
-long long int CMA;
-static long long int AVM;
-
-EXPORT_SYMBOL_GPL(CMA);
 
 extern void allocator_worker_gen(void);
-extern int do_sysinfo(struct sysinfo *info);
+
 
 /******************************************************************************************************/
 
@@ -3548,35 +3536,9 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, zone_idx(zone), order);
 	wake_up_interruptible(&pgdat->kswapd_wait);
 
-/*	
-	printk("enable_to_run_memAlloc: %d, is_less_than_maxALM: %d, can_provide_mem: %d",\
-								     enable_to_run_memAlloc,\
-								     is_less_than_maxALM,\
-								     can_provide_mem);*/
 	
-	if (enable_to_run_memAlloc)
-	{
-		tsk = current;
-		temp = ((long long int) tsk->mm->hiwater_rss) << 2;
-		temp = (temp * (long long int)(Alloc_rate*1024)) >> 10;
-		
-
-		if (is_less_than_maxALM && can_provide_mem && AVM < temp && CMA != temp)	
-		{
-			CMA = temp;
-			//printk("CMA: %lld, temp: %lld\n",CMA,temp);
-			rBuffer.AVM = AVM;
-			rBuffer.CMA = CMA;
-			//	CMA = temp;
-			//	req = temp - AVM;
-			if (enable_WorkGen)
-			{
-				enable_WorkGen = 0;
-				allocator_worker_gen();
-			}
-	 	}
-	
-	}
+	if (enable_to_run_memAlloc && is_less_than_maxALM && can_provide_mem)
+		allocator_worker_gen();
 	
 }
 
