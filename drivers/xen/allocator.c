@@ -100,7 +100,8 @@ static void allocator_process(struct work_struct *work)
 		cpumask_clear_cpu(1,mm_cpumask(p->mm));
 		task_unlock(p);
 		
-		printk("[%d] = %lu\n",p->pid,get_mm_rss(p->mm));
+		//printk("[%d] = %lu\n",p->pid,get_mm_rss(p->mm));
+		printk("[%d] = %lu\n",p->pid,p->mm->hiwater_rss);
 	}
 //	tsk = current;
 //	CMAtemp = ((long long int) tsk->mm->hiwater_rss) << 2;
