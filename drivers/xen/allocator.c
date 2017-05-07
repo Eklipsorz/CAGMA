@@ -50,6 +50,7 @@ EXPORT_SYMBOL_GPL(CMA);
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
 extern int do_sysinfo(struct sysinfo *info);
+extern struct task_struct *find_lock_task_mm(struct task_struct *p);
 
 static void allocate(long long int AVMtemp, long long int CMAtemp)
 {
@@ -84,24 +85,36 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 static void allocator_process(struct work_struct *work)
 {
 //	long long int CMAtemp, AVMtemp;	
-	struct task_struct *tsk;
-	long long int CMAtemp,AVM;
-	struct sysinfo sinfo;
+	struct task_struct *task;
+//	struct sysinfo sinfo;
 	
-	do_sysinfo(&sinfo);
-	AVM = sinfo.freeram >> 10;
+//	do_sysinfo(&sinfo);
+//	AVM = sinfo.freeram >> 10;
+	for_each_process(task)
+	{
+		struct task_struct *p;
 
-	tsk = current;
-	CMAtemp = ((long long int) tsk->mm->hiwater_rss) << 2;
-	CMAtemp = (CMAtemp * (long long int)(Alloc_rate*1024)) >> 10;
+		p = find_lock_task_mm(task);
+		if (!p)
+			continue;
+		cpumask_clear_cpu(1,mm_cpumask(p->mm));
+		task_unlock(p);
+		
+		printk("[%d] = %lu\n",p->pid,get_mm_rss(p->mm));
+	}
+//	tsk = current;
+//	CMAtemp = ((long long int) tsk->mm->hiwater_rss) << 2;
+//	CMAtemp = (CMAtemp * (long long int)(Alloc_rate*1024)) >> 10;
 	
-	printk("CMAtemp: %lld, AVM: %lld", CMAtemp,AVM);
+	//printk("CMAtemp: %lld, AVM: %lld", CMAtemp,AVM);
+//	printk("CMAtemp: %lld\n", CMAtemp);
 	
-	if (AVM < CMAtemp && CMA != CMAtemp)	
+/*	if (AVM < CMAtemp && CMA != CMAtemp)	
 	{
 		CMA = CMAtemp;		
 
 	}
+*/
 /*
 	if (Is_AVM_Bigger())
 	{

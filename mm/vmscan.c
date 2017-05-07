@@ -3507,12 +3507,7 @@ static int kswapd(void *p)
 void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 {
 	pg_data_t *pgdat;
-	struct task_struct *tsk;
-	struct sysinfo sinfo;
-	long long int temp;	
 
-	do_sysinfo(&sinfo);
-	AVM = sinfo.freeram >> 10;
 
 	if (!populated_zone(zone))
 		return;
