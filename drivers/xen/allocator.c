@@ -14,7 +14,6 @@
 #include <linux/memory.h>
 #include <linux/memory_hotplug.h>
 #include <linux/percpu-defs.h>
-#include <linux/Simple_rBuffer.h>
 
 #include <asm/page.h>
 #include <asm/pgalloc.h>
@@ -36,7 +35,6 @@
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
-bool enable_WorkGen = 1;
 
 long long int Mmax;
 long long int CMA;
@@ -46,29 +44,12 @@ long long int count = 0;
 EXPORT_SYMBOL_GPL(can_provide_mem);
 EXPORT_SYMBOL_GPL(is_less_than_maxALM);
 EXPORT_SYMBOL_GPL(enable_to_run_memAlloc);
-EXPORT_SYMBOL_GPL(enable_WorkGen);
 EXPORT_SYMBOL_GPL(Mmax);
 EXPORT_SYMBOL_GPL(CMA);
 
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
 extern int do_sysinfo(struct sysinfo *info);
-
-static int Is_AVM_Bigger(void)
-{
-	struct sysinfo sinfo;
-	long long int AVM,UMA;
-
-	do_sysinfo(&sinfo);
-	AVM = sinfo.freeram >> 10;
-	UMA = (sinfo.totalram >> 10 ) - AVM;
-	
-	if (AVM > UMA)
-		return 1;
-	else
-		return 0;
-
-}
 
 static void allocate(long long int AVMtemp, long long int CMAtemp)
 {
@@ -104,21 +85,21 @@ static void allocator_process(struct work_struct *work)
 {
 //	long long int CMAtemp, AVMtemp;	
 	struct task_struct *tsk;
-	long long int temp, AVM;
+	long long int CMAtemp,AVM;
 	struct sysinfo sinfo;
-
-
+	
 	do_sysinfo(&sinfo);
 	AVM = sinfo.freeram >> 10;
-	tsk = current;
-	temp = ((long long int) tsk->mm->hiwater_rss) << 2;
-	temp = (temp * (long long int)(Alloc_rate*1024)) >> 10;
-	
-	printk("temp: %lld\n", temp);
-	
-	if (AVM < temp && CMA != temp)	
-	{
 
+	tsk = current;
+	CMAtemp = ((long long int) tsk->mm->hiwater_rss) << 2;
+	CMAtemp = (CMAtemp * (long long int)(Alloc_rate*1024)) >> 10;
+	
+	printk("CMAtemp: %lld, AVM: %lld", CMAtemp,AVM);
+	
+	if (AVM < CMAtemp && CMA != CMAtemp)	
+	{
+		CMA = CMAtemp;		
 
 	}
 /*

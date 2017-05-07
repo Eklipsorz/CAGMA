@@ -52,7 +52,6 @@
 
 #include <linux/swapops.h>
 #include <linux/balloon_compaction.h>
-#include <linux/Simple_rBuffer.h>
 #include "internal.h"
 
 
