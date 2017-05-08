@@ -84,13 +84,11 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 
 static void allocator_process(struct work_struct *work)
 {
-//	long long int CMAtemp, AVMtemp;	
 	struct task_struct *task;
 	unsigned long CMA = 0,temp; 
-//	struct sysinfo sinfo;
+	struct sysinfo sinfo;
 	
-//	do_sysinfo(&sinfo);
-//	AVM = sinfo.freeram >> 10;
+
 	for_each_process(task)
 	{
 		struct task_struct *p;
@@ -104,43 +102,19 @@ static void allocator_process(struct work_struct *work)
 		temp = get_mm_rss(p->mm) + get_mm_counter(p->mm, MM_SWAPENTS);
 		if (temp > CMA)
 			CMA = temp;
-		printk("temp = %lu, CMA = %lu\n",temp,CMA);
-		//printk("[%d] = %lu\n",p->pid,get_mm_rss(p->mm));
 	}
-	printk("final CMA = %lu \n",CMA);
-
-//	tsk = current;
-//	CMAtemp = ((long long int) tsk->mm->hiwater_rss) << 2;
-//	CMAtemp = (CMAtemp * (long long int)(Alloc_rate*1024)) >> 10;
 	
-	//printk("CMAtemp: %lld, AVM: %lld", CMAtemp,AVM);
-//	printk("CMAtemp: %lld\n", CMAtemp);
-	
-/*	if (AVM < CMAtemp && CMA != CMAtemp)	
-	{
-		CMA = CMAtemp;		
+	CMA = CMA << 2;
+	CMA = (CMA * (unsigned long) (Alloc_rate * 1024)) >> 10;
 
-	}
-*/
-/*
-	if (Is_AVM_Bigger())
-	{
-		count++;
-		enable_WorkGen = 1;
-		printk("count:%lld \n",count);
+	do_sysinfo(&sinfo);
+	AVM = sinfo.freeram >> 10;
+
+	if (AVM >= CMA)
 		return;
-	}
 	else
-	{
-		CMAtemp = rBuffer.CMA;
-		AVMtemp = rBuffer.AVM;
-		
-		if ( CMAtemp > 0 && AVMtemp > 0)
-			allocate(AVMtemp,CMAtemp);			
-		//printk("CMA: %lld, AVM: %lld\n", CMAtemp, AVMtemp);	
-		schedule_delayed_work(&allocator_worker,300);
-	}
-*/	
+		allocate(AVM,CMA);			
+
 	
 }
 
