@@ -86,6 +86,7 @@ static void allocator_process(struct work_struct *work)
 {
 //	long long int CMAtemp, AVMtemp;	
 	struct task_struct *task;
+	unsigned long CMA = 0,temp; 
 //	struct sysinfo sinfo;
 	
 //	do_sysinfo(&sinfo);
@@ -93,16 +94,21 @@ static void allocator_process(struct work_struct *work)
 	for_each_process(task)
 	{
 		struct task_struct *p;
-
+		
 		p = find_lock_task_mm(task);
 		if (!p)
 			continue;
 		cpumask_clear_cpu(1,mm_cpumask(p->mm));
 		task_unlock(p);
 		
+		temp = get_mm_rss(p->mm) + get_mm_counter(p->mm, MM_SWAPENTS);
+		if (temp > CMA)
+			CMA = temp;
+		printk("temp = %lu, CMA = %lu\n",temp,CMA);
 		//printk("[%d] = %lu\n",p->pid,get_mm_rss(p->mm));
-		printk("[%d] = %lu\n",p->pid,p->mm->hiwater_rss);
 	}
+	printk("final CMA = %lu \n",CMA);
+
 //	tsk = current;
 //	CMAtemp = ((long long int) tsk->mm->hiwater_rss) << 2;
 //	CMAtemp = (CMAtemp * (long long int)(Alloc_rate*1024)) >> 10;
