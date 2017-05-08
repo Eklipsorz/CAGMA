@@ -37,8 +37,7 @@ bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
 
 long long int Mmax;
-long long int CMA;
-long long int count = 0;
+long long int CMA = -1;
 
 
 EXPORT_SYMBOL_GPL(can_provide_mem);
@@ -85,7 +84,7 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 static void allocator_process(struct work_struct *work)
 {
 	struct task_struct *task;
-	unsigned long CMA = 0,temp; 
+	unsigned long CMAtemp = 0, AVM, temp; 
 	struct sysinfo sinfo;
 	
 
@@ -100,22 +99,24 @@ static void allocator_process(struct work_struct *work)
 		task_unlock(p);
 		
 		temp = get_mm_rss(p->mm) + get_mm_counter(p->mm, MM_SWAPENTS);
-		if (temp > CMA)
-			CMA = temp;
+		if (temp > CMAtemp)
+			CMAtemp = temp;
 	}
 	
-	CMA = CMA << 2;
-	CMA = (CMA * (unsigned long) (Alloc_rate * 1024)) >> 10;
+	CMAtemp = CMAtemp << 2;
+	CMAtemp = (CMAtemp * (unsigned long) (Alloc_rate * 1024)) >> 10;
 
 	do_sysinfo(&sinfo);
 	AVM = sinfo.freeram >> 10;
 
-	if (AVM >= CMA)
+	if (AVM >= CMAtemp)
 		return;
 	else
+	{
+		CMA = CMAtemp;
 		allocate(AVM,CMA);			
-
-	
+	}
+		
 }
 
 void allocator_worker_gen(void)
