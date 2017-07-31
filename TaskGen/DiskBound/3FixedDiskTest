@@ -1,0 +1,241 @@
+#!/bin/bash 
+
+
+memUTarget=125
+wpoint="accDisk"
+# expected value  ->  actual value
+# 	40 	  -> 	   60
+# 	50 	  -> 	   70
+# 	60 	  ->       80
+# 	70 	  -> 	   90
+# 	80 	  -> 	  100 
+#      100 	  -> 	  120
+#      120     	  ->      140
+#      140        ->      150
+# The actual constrain needs to be smaller than expected constrain.
+# Because the system always doesn't react to changes of memU in time
+nrround=5
+expTime=720
+nrlevel=5
+enable_test_CAGMA=0
+export LD_LIBRARY_PATH=/usr/lib
+
+#begin=`date +%s`
+#diff=0
+#
+#    Initialization
+#test -e memU && rm -f memU 
+#test -e etime && rm -f etime
+
+#./genPattern 0 80 10 >> memU  		# output memUsage pattern
+#./genPattern 1 0.1 0.05 >> etime 	# output Execution Time pattern
+iter=0
+
+echo 3 > /proc/sys/vm/drop_caches
+
+trap trapContrC INT
+function trapContrC(){
+	
+
+	for id in $(pidof $wpoint)
+	do
+		kill -9 $id
+	done
+
+	sarpid=$(pidof sar)	
+	kill -9 $sarpid
+	DCollector=$(pidof -x DataCollector)
+	kill -9 $DCollector
+	mempid=$(pidof FixedAccMem)
+	kill -9 $mempid
+
+	rmmod supCenter.ko
+	rmmod resetCMA.ko
+	rmmod DiskNotifier.ko
+	exit	
+}
+
+function killWpoint(){
+
+	for id in $(pidof $wpoint)
+	do
+		kill -9 $id
+	done
+
+}
+
+function killMain(){
+	
+
+	killWpoint
+
+	sarpid=$(pidof sar)
+	kill -9 $sarpid
+	DCollector=$(pidof -x DataCollector)
+	kill -9 $DCollector
+}
+function getNRmainProg(){
+	
+	NRmainProg=0
+	
+	for i in $(pidof FixedAccMem)
+	do
+		NRmainProg=$((NRmainProg+1))	
+	done 
+}
+
+function obtainCurmemU(){
+
+	curFree=`cat /proc/meminfo | awk '$1=="MemFree:"{print $2}'`
+	curTotal=`cat /proc/meminfo | awk '$1=="MemTotal:"{print $2}'`
+	curSwapFree=`cat /proc/meminfo | awk '$1=="SwapFree:"{print $2}'`
+	curSwapTotal=`cat /proc/meminfo | awk '$1=="SwapTotal:"{print $2}'`
+	curSwapUsage=$(($curSwapTotal-$curSwapFree))
+	curUsage=$(($curTotal-$curFree+$curSwapUsage))
+	curmemU=$(($curUsage*100/$curTotal))
+	memUdiff=$(($memUTarget-$curmemU))
+
+}
+
+function calc() { awk "BEGIN{print $*}"; }     # set float arithmetic function
+echo "begin"
+#
+#
+#: ' 
+#function begin()
+#{
+#
+nrtask=15
+tempsum=0
+count=0
+function initMain(){
+	#sar MEM_IOPS
+	swapoff -a
+	swapon -a
+	#iostat -x 6 160 >> ../output/MEM_RPS.$1 &
+	#vmstat 6 160 >> ../output/MEM_memUsage.$1 &
+	#../Tools/getMEMU_MEM 960 $1 &	
+}
+
+function wait_for_(){	
+
+	ret=1
+	echo "I send a packet to controller"
+	while [ "$ret" == "1" ]
+	do
+		echo hi | nc 203.64.125.101 2393
+		ret=`echo $?`	
+	done
+	
+	while [ "$ret" != "hi" ]
+	do	
+		ret=$(nc -l 2390)
+	done
+	echo "VM3: i received a packet, ans=$ret" 
+}
+
+function wait_for_testing_CMA(){	
+
+	ret=1
+	echo "I send a packet to controller"
+	while [ "$ret" == "1" ]
+	do
+		echo hi | nc 203.64.125.101 2396
+		ret=`echo $?`	
+	done
+	
+	while [ "$ret" != "hi" ]
+	do	
+		ret=$(nc -l 2390)
+	done
+	echo "VM3: i received a packet for CMA, ans: $ret"
+}
+function warmup(){
+	
+	for i in $(seq 1 $nrtask)
+	do
+		./$wpoint &
+	done
+	./FixedAccMem &
+	wait_for_
+}
+
+function begin_to_exper(){
+
+
+	warmup	
+	
+	initMain
+	
+	expTime=60
+	sar -b -t 3 110 >> ./result/DISK_IOPS.$1 & 
+	./GameGate $1
+	
+	for i in $(seq 1 6)
+	do
+		echo "enter $i/6, ans = $nrtask"
+
+		begin=`date +%s`
+		diff=0
+		
+		while [ "$diff" -le "$expTime" ]
+		do
+			end=`date +%s`
+			diff=$((end-begin))
+		done
+	done
+}
+
+
+for i in $(seq 1 20)
+do
+	if [ "$enable_test_CAGMA" -eq "1" ]; then
+		insmod ../Tools/resetCMA/resetCMA.ko 
+		rmmod resetCMA.ko
+		echo "reset CMA.........done"
+		insmod /root/LMAProj2016/supCenter/supCenter.ko 
+		echo "install supCenter.........done"
+	fi
+	
+	sleep 1
+	echo "$i"
+	insmod ./monitor/DiskNotifier.ko
+	begin_to_exper $i
+
+
+	NRmainProg=`pgrep accDisk | wc -l`
+	while [ "$NRmainProg" -gt "0" ]; 	
+	do
+		killWpoint
+		NRmainProg=`pgrep accDisk | wc -l`
+	done
+	
+	sarpid=$(pidof sar)
+	kill -9 $sarpid
+	mempid=$(pidof FixedAccMem)
+	kill -9 $mempid
+
+	echo "waitfor iops"
+	sleep 10	
+	echo "waitfor iops......done"
+	
+	rmmod DiskNotifier.ko
+	
+		
+#
+	if [ "$enable_test_CAGMA" -eq "1" ]; then
+		
+		rmmod supCenter.ko
+		echo "uninstall supCenter.........done"
+	
+		wait_for_testing_CMA
+		echo "I'm ready to test next CAGMA"
+	else
+		wait_for_
+	fi
+#
+done
+
+killMain
+	
+
