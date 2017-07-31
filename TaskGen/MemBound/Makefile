@@ -11,12 +11,25 @@ LAPACKLIBS_PATH=/usr/lib64 # WHEN USING LAPACK, CHANGE THIS TO WHERE YOUR COMPIL
 LDFLAGS=-L$(LAPACKLIBS_PATH) -L.
 FIXEDACCMEM=FixedAccMem.c
 GAMEGATERCS=GameGate.c
+allTarget=FixedAccMem GameGate
 
-all: FixedACMem GAMEGATE
+all: FixedAccMem GameGate
+.PHONY: FixedAccMem GameGate clean
+#GAMEGATE: $(GAMEGATERCS)
+#FixedACMem: $(FIXEDACCMEM)
+FixedAccMem: $(FIXEDACCMEM)
+GameGate: $(GAMEGATERCS)
+$(allTarget):
+	echo $@ $<
+	#test -e /usr/lib/libtolbox.so.0 || make -C toolbox
+	#gcc -lpthread -lm -ltolbox -Wall -O2 -g -o $@ $<
 
-FixedACMem: $(FIXEDACCMEM)
-	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
-	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o FixedAccMem $(FIXEDACCMEM)
-GAMEGATE: $(GAMEGATERCS)
-	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
-	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o GameGate $(GAMEGATERCS)
+.PHONY: clean
+
+clean:
+	@echo test
+	
+
+#GAMEGATE: $(GAMEGATERCS)
+#	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
+#	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o GameGate $(GAMEGATERCS)
