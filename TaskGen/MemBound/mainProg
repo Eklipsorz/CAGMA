@@ -1,6 +1,0 @@
-#!/bin/bash
-
-rm -rf ../output/MEM_*
-insmod ../../ProcNoify/accMem/ProcNoify.ko
-./1FixedMemTest
-rmmod ProcNoify.ko
