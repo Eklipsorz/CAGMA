@@ -1,0 +1,16 @@
+#!/bin/bash 
+#8000 20000
+# 0  0.5
+delay=0.5
+
+sum=0
+begin=`(date +%s)`
+while [ "$sum" -le "$2" ] 	
+do
+	#dd if=/dev/zero of=random bs=4k count=12500 2>>../output/IO_RTIME.$1 && rm -rf random 
+	dd if=/dev/zero of=random bs=4k count=16384 && rm -rf random 
+	sleep $delay
+	end=`(date +%s)`
+	sum=$(($end-$begin))
+done
+	#dd if=/dev/zero of=random bs=4k count=256000 && rm -rf random;  ./test.sh

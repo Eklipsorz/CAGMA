@@ -1,0 +1,6 @@
+#!/bin/bash 
+outputDir=result
+
+test -e /root/$outputDir || mkdir /root/$outputDir
+ln -s /root/$outputDir ./$outputDir
+

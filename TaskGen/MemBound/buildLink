@@ -1,0 +1,9 @@
+#!/bin/bash 
+outputDir=result
+target=MemBound/monitor
+monitorDir=ProcNoify/accMem
+
+test -e /root/$outputDir || mkdir /root/$outputDir
+ln -s /root/$outputDir ./$outputDir
+ln -s /root/LMAProj2016/ExperimentI/Proc/$monitorDir    /root/LMAProj2016/ExperimentI/Proc/nonShared/$target
+
