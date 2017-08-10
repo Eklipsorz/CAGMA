@@ -12,7 +12,11 @@
 	a. CMA Watcher
 	b. Memory Adjuster		
  
-3. Build a Workload Generator for verifying cabibility of CAGMA:	....... 03/3/2017  finished
+3. Build a Workload Generator for verifying cabibility of CAGMA:	....... 03/03/2017 finished
 	a. Data Collector
 	b. Task Generator
 
+4. Optmize Source Code within this project :
+	a. Optmize AutoKickStart sub-project 				....... 08/11/2017 finished
+	b. Optmize modified kernel 4.2.2
+	c. Optmize Workload Generator
