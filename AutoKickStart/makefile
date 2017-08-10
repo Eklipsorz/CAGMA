@@ -1,4 +1,4 @@
-all: ./tmp/initrd.img ./tmp/vmlinuz
+all: ./tmp/initrd.img ./tmp/vmlinuz extract
 mirror:=http://mirror01.idc.hinet.net/CentOS/6/os/x86_64/isolinux
 
 # Variable mirror stores URL 
@@ -8,9 +8,10 @@ mirror:=http://mirror01.idc.hinet.net/CentOS/6/os/x86_64/isolinux
 	wget ${mirror}/initrd.img -P ./tmp
 ./tmp/vmlinuz:
 	wget ${mirror}/vmlinuz -P ./tmp
-extract:
+extract: ./tmp/initrd.img ./tmp/vmlinuz
 	make -C kernel/ $@
 restore:
 	make -C kernel/ $@
 clean:
-	rm -rf tmp
+	rm -rf tmp/
+	make -C kernel/ $@
