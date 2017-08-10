@@ -1,0 +1,18 @@
+# CAGMA Project is to solve performance degradation when insufficient memory problem occurs
+
+
+
+
+# The Prograss of this project: 
+1. Build AutoKickStart to automatically download clean kernel 
+	      and update the kernel with modified install.cfg 		....... 01/30/2017 finished
+2. Modify Kernel 4.2.2 for checking AVM and UMA for each VM p
+	      eriodically and adjusting memory of each VM acc
+	      ording to that :						....... 02/28/2017 finished
+	a. CMA Watcher
+	b. Memory Adjuster		
+ 
+3. Build a Workload Generator for verifying cabibility of CAGMA:	....... 03/3/2017  finished
+	a. Data Collector
+	b. Task Generator
+
