@@ -3530,9 +3530,27 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
 	trace_mm_vmscan_wakeup_kswapd(pgdat->node_id, zone_idx(zone), order);
 	wake_up_interruptible(&pgdat->kswapd_wait);
 
-	
+	/*
+ 	 *	'kswapd' send a task to memory adjuster for requiring more memory when memory is exhausted. 
+ 	 *	However, the task will be accepted by memory adjuster (i.e., memory adjuster adjusts the memory
+ 	 *	of this machine. ) only if the memory adjuster has sufficient memory. To meet this condition, 
+ 	 *	we set two booleans, 'is_less_than_maxALM' and 'can_provide_mem'. 'is_less_than_maxALM' is set 
+ 	 *	for avoiding allocate more memory, 'can_provide_mem' is set for keeping sufficient memory such
+ 	 *	that memory adjuster can continue to allocate memory to other VMs, the remain details of two 
+ 	 *	booleans are shown as the following: 
+ 	 *
+ 	 *	'is_less_than_maxALM' :
+ 	 *		0: The memory of this machine is less than maximum memory amount 'maxALM'
+ 	 *		1: The memory of this machine is no less than maximum memory maount 'maxALM"
+ 	 *
+ 	 *	'can_provide_mem' :
+ 	 *		0: Memory adjuster has insufficient memory to allocate memory additional to VM		
+ 	 *		1: Memory adjuster has sufficient memory to allocate memory to VM
+ 	 *	In addition, 'enable_to_run_memAlloc' is enabled when the guest OS is initiated. (i.e., 
+ 	 *	This boolean is set as 1 after booting. )
+ 	 */  
 	if (enable_to_run_memAlloc && is_less_than_maxALM && can_provide_mem)
-		allocator_worker_gen();
+		allocator_worker_gen(); // Generates a task to 
 	
 }
 
