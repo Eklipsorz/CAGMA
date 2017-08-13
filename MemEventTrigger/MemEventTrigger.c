@@ -29,51 +29,15 @@ MODULE_DESCRIPTION("Noify meminfo");
 MODULE_AUTHOR("Orion <sslouis25@icloud.com>");
 MODULE_LICENSE("GPL");
 
-static void checkMFree(struct work_struct *);
-static DECLARE_DELAYED_WORK(checkMFree_work,checkMFree);
-
-/*static void releaseMem(struct work_struct *);
-static DECLARE_DELAYED_WORK(releaseMem_work,releaseMem);
-
-static void releaseMem(struct work_struct *ws)
-{
-	struct xenbus_transaction trans;
-	struct sysinfo sinfo;
-	long long int availMem,totalMem;
-	long long int amount;
-	char *Target;
-	
-	do_sysinfo(&sinfo);
-	//AVM = sinfo.freeram >> 10;
-	availMem = sinfo.freeram >> 10;
-	
-	if (availMem > CMA)
-	{
-	
-		xenbus_transaction_start(&trans);
-		Target = (char *)xenbus_read(trans, "memory","target",NULL);
-		xenbus_transaction_end(trans, 0);
-		sscanf(Target,"%lld",&totalMem);
+static void checkAVM(struct work_struct *);
+static DECLARE_DELAYED_WORK(checkAVM_worker,checkAVM);
 
 
-		
-		amount = availMem - CMA;
-		if (totalMem - amount > Mem_minimum)
-			totalMem = totalMem - amount;
-		else		
-			totalMem = Mem_minimum;
-		printk("hitest hi\n");
-		xenbus_transaction_start(&trans);
-		xenbus_printf(trans, "memory","target","%lld",totalMem);
-		xenbus_transaction_end(trans, 0);
-		
-	}
-		schedule_delayed_work(&releaseMem_work,6000);
+/*
+ * 	Set template of a periodic task, called 'checkAVM_worker'
+ */ 
 
-
-}
-*/
-static void checkMFree(struct work_struct *ws)
+static void checkAVM(struct work_struct *ws)
 {
 	struct xenbus_transaction trans;
 	struct sysinfo sinfo;
@@ -87,7 +51,7 @@ static void checkMFree(struct work_struct *ws)
 	xenbus_printf(trans, "memory","AVM", "%lld",availMem);
 	xenbus_transaction_end(trans, 0);
 	//printk("check is_less_than_maxALM:%d\n",is_less_than_maxALM);
-	schedule_delayed_work(&checkMFree_work,250);
+	schedule_delayed_work(&checkAVM_worker,250);
 }
 
 
@@ -119,7 +83,6 @@ static void warning_watch(struct xenbus_watch *watch,
 	struct xenbus_transaction trans;
 	char *Target;
 
-	//AVM = sinfo.freeram >> 10;
 	
 	xenbus_transaction_start(&trans);
 	
@@ -132,7 +95,6 @@ static void warning_watch(struct xenbus_watch *watch,
 		can_provide_mem = 1;
 	else if(Target[0] == '0')
 		can_provide_mem = 0;
-//	printk(KERN_INFO "knock knock %d\n",can_provide_mem);	
 
 
 }
@@ -155,21 +117,14 @@ static int __init supCenter_init(void)
 
 	int err;
 
-	schedule_delayed_work(&checkMFree_work,0);
-	//schedule_delayed_work(&releaseMem_work,6000);
+	schedule_delayed_work(&checkAVM_worker,0);
 	err = register_xenbus_watch(&xbus_watch_target);
 	err = register_xenbus_watch(&xbus_watch_warning);
-//	xenbus_transaction_start(&trans);
-//	output = (char *)xenbus_read(trans,"memory","static-max",NULL);	
-//	xenbus_transaction_end(trans, 0);
-//
-//	sscanf(output,"%lld",&Mmax);
-	//printk(KERN_INFO "HI I'M %lld\n",Mmax);
+	
 	can_provide_mem = 1;
 	is_less_than_maxALM = 1;
 	enable_to_run_memAlloc = 1;
 	Mmax = 1536000; 
-//	Mmax = 819200; 
 	
 	return 0;
 
@@ -183,7 +138,7 @@ static void __exit supCenter_exit(void)
 	enable_to_run_memAlloc = 0;
 	unregister_xenbus_watch(&xbus_watch_target);
 	unregister_xenbus_watch(&xbus_watch_warning);
-	cancel_delayed_work(&checkMFree_work);
+	cancel_delayed_work(&checkAVM_worker);
 	//cancel_delayed_work(&releaseMem_work);
 	printk(KERN_INFO "Goodbye\n");
 }
