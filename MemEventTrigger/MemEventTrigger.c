@@ -44,16 +44,17 @@ static void checkAVM(struct work_struct *ws)
 	long long int availMem;
 
 	do_sysinfo(&sinfo);
-	//AVM = sinfo.freeram >> 10;
 	availMem = sinfo.freeram >> 10;
 	
 	xenbus_transaction_start(&trans);
 	xenbus_printf(trans, "memory","AVM", "%lld",availMem);
 	xenbus_transaction_end(trans, 0);
-	//printk("check is_less_than_maxALM:%d\n",is_less_than_maxALM);
 	schedule_delayed_work(&checkAVM_worker,250);
 }
 
+/*
+ *	Set template of a trigger to check whether ALM is bigger than maxALM 
+ */ 
 
 static void checkALM_watch(struct xenbus_watch *watch,
 			      const char **vec, unsigned int len)
@@ -77,6 +78,10 @@ static void checkALM_watch(struct xenbus_watch *watch,
 
 }
 
+/*
+ *	Set template of a event trigger to check whether hypervisor has sufficient memory.
+ */ 
+
 static void warning_watch(struct xenbus_watch *watch,
 			      const char **vec, unsigned int len)
 {
@@ -99,7 +104,9 @@ static void warning_watch(struct xenbus_watch *watch,
 
 }
 
-
+/*
+ *	define two event triggers, xbus_watch_target and xbus_watch_warning
+ */ 
 
 static struct xenbus_watch xbus_watch_target = {
 	.node = "memory/target",
@@ -112,12 +119,16 @@ static struct xenbus_watch xbus_watch_warning = {
 };
 
 
-static int __init supCenter_init(void)
+static int __init MemEventTrigger_init(void)
 {
 
 	int err;
 
 	schedule_delayed_work(&checkAVM_worker,0);
+	/*
+ 	 * 	register two evnet triggers into the system
+ 	 */  
+
 	err = register_xenbus_watch(&xbus_watch_target);
 	err = register_xenbus_watch(&xbus_watch_warning);
 	
@@ -131,11 +142,16 @@ static int __init supCenter_init(void)
 }
 
  
-static void __exit supCenter_exit(void)
+static void __exit MemEventTrigger_exit(void)
 {
 	is_less_than_maxALM = 0;
 	can_provide_mem = 0;
 	enable_to_run_memAlloc = 0;
+	
+
+	/*
+ 	 *	remove two event triggers from the system
+ 	 */ 
 	unregister_xenbus_watch(&xbus_watch_target);
 	unregister_xenbus_watch(&xbus_watch_warning);
 	cancel_delayed_work(&checkAVM_worker);
@@ -143,5 +159,5 @@ static void __exit supCenter_exit(void)
 	printk(KERN_INFO "Goodbye\n");
 }
  
-module_init(supCenter_init);
-module_exit(supCenter_exit);
+module_init(MemEventTrigger_init);
+module_exit(MemEventTrigger_exit);
