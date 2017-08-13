@@ -1,0 +1,1 @@
+cmd_/root/DYMEM2016/SupCenter/test_module/testVFS/testVFS.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /root/DYMEM2016/SupCenter/test_module/testVFS/testVFS.ko /root/DYMEM2016/SupCenter/test_module/testVFS/testVFS.o /root/DYMEM2016/SupCenter/test_module/testVFS/testVFS.mod.o
