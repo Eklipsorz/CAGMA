@@ -68,8 +68,12 @@ EXPORT_SYMBOL_GPL(CMA);
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
 
-/* import two functions (do_sysinfo and find_lock_task_mm), which have been exported, 
- * into this file such that we can call this two functions in this file.
+/* 
+ * import two functions (do_sysinfo and find_lock_task_mm), which have been exported, 
+ * from other files into this file such that we can call this two functions in this file.
+ *
+ * function do_sysinfo: return some system information (e.g., available memory amount)
+ * function find_lock_task_mm: 
  */
 extern int do_sysinfo(struct sysinfo *info);
 extern struct task_struct *find_lock_task_mm(struct task_struct *p);
