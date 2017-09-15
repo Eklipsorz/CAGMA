@@ -32,6 +32,20 @@
 #include <xen/xenbus.h>         /* update CMA with xenbus     */
 #define Alloc_rate 1.1
 
+/* 
+ * The following boolean variables, is_less_than_maxALM, can_provide_mem and enable_to_run_memAlloc, 
+ * represent six system states respectively.
+ *
+ * 'is_less_than_maxALM' :
+ *		0: The memory of this machine is less than maximum memory amount 'maxALM'
+ *		1: The memory of this machine is no less than maximum memory maount 'maxALM"
+ *
+ * 'can_provide_mem' :
+ *		0: Memory adjuster has insufficient memory to allocate memory additional to VM		
+ *		1: Memory adjuster has sufficient memory to allocate memory to VM
+ * In addition, 'enable_to_run_memAlloc' is enabled when guest OS is initiated. (i.e., This 
+ * boolean variable is set to 0 until the guest OS boots up. )
+ */
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
@@ -39,15 +53,24 @@ bool enable_to_run_memAlloc = 0;
 long long int Mmax;
 long long int CMA = -1;
 
-
+/*
+ * export variables (can_provide_mem, is_less_than_maxALM, enable_to_run_memAlloc,
+ * Mmax and CMA) to other files for conveniently use
+ */ 
 EXPORT_SYMBOL_GPL(can_provide_mem);
 EXPORT_SYMBOL_GPL(is_less_than_maxALM);
 EXPORT_SYMBOL_GPL(enable_to_run_memAlloc);
 EXPORT_SYMBOL_GPL(Mmax);
 EXPORT_SYMBOL_GPL(CMA);
 
+
+/* delcare task template. This task generated from this template can be delayed */
 static void allocator_process(struct work_struct *work);
 static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
+
+/* import two functions (do_sysinfo and find_lock_task_mm), which have been exported, 
+ * into this file such that we can call this two functions in this file.
+ */
 extern int do_sysinfo(struct sysinfo *info);
 extern struct task_struct *find_lock_task_mm(struct task_struct *p);
 
