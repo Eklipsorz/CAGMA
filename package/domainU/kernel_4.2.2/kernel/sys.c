@@ -2352,8 +2352,8 @@ int do_sysinfo(struct sysinfo *info)
 out:
 	return 0;
 }
+/* export function do_sysinfo to other files */
 EXPORT_SYMBOL(do_sysinfo);
-
 SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
 {
 	struct sysinfo val;

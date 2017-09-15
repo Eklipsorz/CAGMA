@@ -1,0 +1,10 @@
+--- sys2.c	2017-09-15 21:37:37.631897973 +0800
++++ sys.c	2017-09-15 21:35:33.361897973 +0800
+@@ -2352,6 +2352,7 @@
+ out:
+ 	return 0;
+ }
++EXPORT_SYMBOL(do_sysinfo);
+ SYSCALL_DEFINE1(sysinfo, struct sysinfo __user *, info)
+ {
+ 	struct sysinfo val;
