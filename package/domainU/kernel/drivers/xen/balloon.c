@@ -510,12 +510,19 @@ static void balloon_process(struct work_struct *work)
 
 	} while (credit && state == BP_DONE);
 	
+	
+	/* 
+	 * When size of physical memory is less than memory requirement,
+	 * the system set can_provide_mem to 0 for disabling memory 
+	 * allocation.
+	 */ 
 	if (balloon_stats.target_pages > balloon_stats.current_pages)
 	{		
 		can_provide_mem = 0;	
 		printk(KERN_INFO "status: %d curr: %lu target: %lu\n", \
 				can_provide_mem,balloon_stats.current_pages,balloon_stats.target_pages);	
 	}
+	
 	/* Schedule more work if there is some still to be done. */
 	if (state == BP_EAGAIN)
 		schedule_delayed_work(&balloon_worker, balloon_stats.schedule_delay * HZ);

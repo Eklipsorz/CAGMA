@@ -1,4 +1,0 @@
-config SUPCENTER
-	tristate "Support Center"
-	help
-		my driver module.
