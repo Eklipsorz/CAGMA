@@ -1,0 +1,22 @@
+--- balloon2.c	2017-09-17 04:08:11.385579444 +0800
++++ balloon.c	2017-09-17 04:04:08.827579444 +0800
+@@ -510,6 +510,19 @@
+ 
+ 	} while (credit && state == BP_DONE);
+ 	
++	
++	/* 
++	 * When size of physical memory is less than memory requirement,
++	 * the system set can_provide_mem to 0 for disabling memory 
++	 * allocation.
++	 */ 
++	if (balloon_stats.target_pages > balloon_stats.current_pages)
++	{		
++		can_provide_mem = 0;	
++		printk(KERN_INFO "status: %d curr: %lu target: %lu\n", \
++				can_provide_mem,balloon_stats.current_pages,balloon_stats.target_pages);	
++	}
++	
+ 	/* Schedule more work if there is some still to be done. */
+ 	if (state == BP_EAGAIN)
+ 		schedule_delayed_work(&balloon_worker, balloon_stats.schedule_delay * HZ);
