@@ -154,6 +154,7 @@ void allocator_worker_gen(void)
 
 EXPORT_SYMBOL_GPL(allocator_worker_gen);
 
+/* Initialize allocator */
 static int __init allocator_init(void)
 {
 
