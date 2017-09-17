@@ -69,7 +69,11 @@
 /******************************************************************************************************/
 
 
-
+/*
+ * The following variables and function are exported from cagma-mem-requester.c 
+ * This helps guest OS send a request to hypervisor when memory usage is bigger 
+ * than the size of allocated memory 
+ */ 
 
 extern bool can_provide_mem;
 extern bool is_less_than_maxALM;
@@ -3550,7 +3554,7 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
  	 *	This boolean is set as 1 after booting. )
  	 */  
 	if (enable_to_run_memAlloc && is_less_than_maxALM && can_provide_mem)
-		allocator_worker_gen(); // Generates a task to 
+		allocator_worker_gen(); // send a request for adjusting memory to hypervisor 
 	
 }
 
