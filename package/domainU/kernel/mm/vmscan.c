@@ -65,25 +65,6 @@
 #include <linux/buffer_head.h>
 
 
-
-/******************************************************************************************************/
-
-
-/*
- * The following variables and function are exported from cagma-mem-requester.c 
- * This helps guest OS send a request to hypervisor when memory usage is bigger 
- * than the size of allocated memory 
- */ 
-
-extern bool can_provide_mem;
-extern bool is_less_than_maxALM;
-extern bool enable_to_run_memAlloc;
-
-extern void cagma_memory_requester_worker_gen(void);
-
-
-/******************************************************************************************************/
-
 struct scan_control {
 
 	/* How many pages shrink_list() should reclaim */
