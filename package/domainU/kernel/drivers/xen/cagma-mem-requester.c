@@ -30,8 +30,7 @@
 #include <xen/features.h>
 #include <xen/page.h>
 #include <xen/xenbus.h>         /* update CMA with xenbus     */
-#define Alloc_rate 1.1
-
+#define Alloc_rate 1.1 		/* decrease probability of ocurrence of thrashing via Alloc_rate x new_target */
 /* 
  * The following boolean variables, is_less_than_maxALM, can_provide_mem and enable_to_run_memAlloc, 
  * represent six system states respectively.
@@ -82,12 +81,19 @@ static DECLARE_DELAYED_WORK(cagma_memory_requester_worker, cagma_memory_requeste
 extern int do_sysinfo(struct sysinfo *info);
 extern struct task_struct *find_lock_task_mm(struct task_struct *p);
 
+/* 
+ * The function send_req: send the request for adjusting allocated memory 
+ * Parameter:
+ * 	first parameter is the size of unused memory 
+ *      second parameter is critical memory amount
+ */
 static void send_req(long long int AVMtemp, long long int CMAtemp)
 {
 	struct xenbus_transaction trans;
 	long long int out2lld,new_target,req;
 	char *output;
 
+	/* obtain allocated memory amount via interface xenbus */ 
 	xenbus_transaction_start(&trans);
 	output = (char *)xenbus_read(trans,"memory","target",NULL);
 	xenbus_transaction_end(trans, 0);
@@ -95,16 +101,26 @@ static void send_req(long long int AVMtemp, long long int CMAtemp)
 	req = CMAtemp - AVMtemp;
 	sscanf(output,"%lld",&out2lld);
 	//req = (req * (long long int)((Alloc_rate)*1024)) >> 10;
+	
+	/* calculate new allocated memory amount */ 
 	new_target = out2lld + req;
 	printk("new_target:%lld \n",new_target);	
-	
+
+
+	/*
+	 * check whether expected allocated memory is bigger than maximum memory amount
+	 * if so, then guest OS can not send the request anymore.
+	 * if not, then guest OS can still send the request to hypervisor.
+	 */ 
 	if (new_target >= Mmax)
 	{
 		new_target = Mmax;	
 		is_less_than_maxALM = 0;
 	}
 	
+	/* send the request to hypervisor via interface xenbus */
 	xenbus_transaction_start(&trans);
+	/* write new_target into memory/target in xenstore via interface xenbus */
 	xenbus_printf(trans, "memory","target", "%lld", new_target); 
 	xenbus_transaction_end(trans, 0);
 
@@ -138,12 +154,19 @@ static void cagma_memory_requester_process(struct work_struct *work)
 	CMAtemp = CMAtemp << 2;
 	CMAtemp = (CMAtemp * (unsigned long) (Alloc_rate * 1024)) >> 10;
 
+
+	/* obtain unused memory amount via function do_sysinfo() */
 	do_sysinfo(&sinfo);
+	/* the unit of sinfo.freeram is KiloByte (KB) */
 	AVM = sinfo.freeram >> 10;
 
+	/* 
+	 * set the constraint (AVM >= CMAtemp) to avoid degrading performance via
+	 * decreasing times of adjusting allocated memory amount.
+	 */ 
 	if (AVM >= CMAtemp)
 		return;
-	else
+	else /* AVM < CMAtemp */
 	{
 		CMA = CMAtemp;
 		send_req(AVM,CMA);			
@@ -151,6 +174,7 @@ static void cagma_memory_requester_process(struct work_struct *work)
 		
 }
 
+/* Generate a task to send request */
 void cagma_memory_requester_worker_gen(void)
 {
 	printk("first generate\n");
