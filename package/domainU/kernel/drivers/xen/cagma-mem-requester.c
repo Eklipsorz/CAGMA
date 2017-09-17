@@ -46,12 +46,14 @@
  * In addition, 'enable_to_run_memAlloc' is enabled when guest OS is initiated. (i.e., This 
  * boolean variable is set to 0 until the guest OS boots up. )
  */
+
 bool is_less_than_maxALM = 1;
 bool can_provide_mem = 1;
 bool enable_to_run_memAlloc = 0; 
 
 long long int Mmax;
 long long int CMA = -1;
+
 
 /*
  * export variables (can_provide_mem, is_less_than_maxALM, enable_to_run_memAlloc,
@@ -63,10 +65,11 @@ EXPORT_SYMBOL_GPL(enable_to_run_memAlloc);
 EXPORT_SYMBOL_GPL(Mmax);
 EXPORT_SYMBOL_GPL(CMA);
 
-
 /* delcare task template. This task generated from this template can be delayed */
-static void allocator_process(struct work_struct *work);
-static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
+
+static void cagma_memory_requester_process(struct work_struct *work);
+static DECLARE_DELAYED_WORK(cagma_memory_requester_worker, cagma_memory_requester_process);
+
 
 /* 
  * import two functions (do_sysinfo and find_lock_task_mm), which have been exported, 
@@ -75,10 +78,11 @@ static DECLARE_DELAYED_WORK(allocator_worker, allocator_process);
  * function do_sysinfo: return some system information (e.g., available memory amount)
  * function find_lock_task_mm: 
  */
+
 extern int do_sysinfo(struct sysinfo *info);
 extern struct task_struct *find_lock_task_mm(struct task_struct *p);
 
-static void allocate(long long int AVMtemp, long long int CMAtemp)
+static void send_req(long long int AVMtemp, long long int CMAtemp)
 {
 	struct xenbus_transaction trans;
 	long long int out2lld,new_target,req;
@@ -93,6 +97,7 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 	//req = (req * (long long int)((Alloc_rate)*1024)) >> 10;
 	new_target = out2lld + req;
 	printk("new_target:%lld \n",new_target);	
+	
 	if (new_target >= Mmax)
 	{
 		new_target = Mmax;	
@@ -108,7 +113,7 @@ static void allocate(long long int AVMtemp, long long int CMAtemp)
 
 
 
-static void allocator_process(struct work_struct *work)
+static void cagma_memory_requester_process(struct work_struct *work)
 {
 	struct task_struct *task;
 	unsigned long CMAtemp = 0, AVM, temp; 
@@ -141,27 +146,27 @@ static void allocator_process(struct work_struct *work)
 	else
 	{
 		CMA = CMAtemp;
-		allocate(AVM,CMA);			
+		send_req(AVM,CMA);			
 	}
 		
 }
 
-void allocator_worker_gen(void)
+void cagma_memory_requester_worker_gen(void)
 {
 	printk("first generate\n");
-	schedule_delayed_work(&allocator_worker, 0);
+	schedule_delayed_work(&cagma_memory_requester_worker, 0);
 }
 
-EXPORT_SYMBOL_GPL(allocator_worker_gen);
+EXPORT_SYMBOL_GPL(cagma_memory_requester_worker_gen);
 
 /* Initialize allocator */
-static int __init allocator_init(void)
+static int __init cagma_memory_requester_init(void)
 {
 
-	pr_info("Initialising allocator driver\n");
+	pr_info("Initialising cagma-memory-requester driver\n");
 	return 0;
 }
 
-subsys_initcall(allocator_init);
+subsys_initcall(cagma_memory_requester_init);
 
 MODULE_LICENSE("GPL");
