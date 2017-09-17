@@ -79,7 +79,7 @@ extern bool can_provide_mem;
 extern bool is_less_than_maxALM;
 extern bool enable_to_run_memAlloc;
 
-extern void allocator_worker_gen(void);
+extern void cagma_memory_requester_worker_gen(void);
 
 
 /******************************************************************************************************/
@@ -3554,7 +3554,7 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
  	 *	This boolean is set as 1 after booting. )
  	 */  
 	if (enable_to_run_memAlloc && is_less_than_maxALM && can_provide_mem)
-		allocator_worker_gen(); // send a request for adjusting memory to hypervisor 
+		cagma_memory_requester_worker_gen(); // send a request for adjusting memory to hypervisor 
 	
 }
 
