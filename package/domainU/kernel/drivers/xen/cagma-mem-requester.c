@@ -135,25 +135,34 @@ static void cagma_memory_requester_process(struct work_struct *work)
 	unsigned long CMAtemp = 0, AVM, temp; 
 	struct sysinfo sinfo;
 	
-
+	/*  travel all processes/threads to find the process/thread that enables swapping event */
 	for_each_process(task)
 	{
 		struct task_struct *p;
 		
+		/* find a process/thread which has a vaild mm structure */
 		p = find_lock_task_mm(task);
+		
 		if (!p)
 			continue;
-		cpumask_clear_cpu(1,mm_cpumask(p->mm));
+		/* 
+		 * find_lock_task_mm() calls task_lock() but if a process/thread is found,
+		 * then find_lock_task_mm() directly reture without unlocking task. Therefore,
+		 * we have to additionally call task_unlock to unlock protection.
+		 */ 
 		task_unlock(p);
 		
-		temp = get_mm_rss(p->mm) + get_mm_counter(p->mm, MM_SWAPENTS);
-		if (temp > CMAtemp)
-			CMAtemp = temp;
+		/* obtain memory usage (consist of usage in disk) of the found process/thread */
+		CMAtemp = get_mm_rss(p->mm) + get_mm_counter(p->mm, MM_SWAPENTS);
+	
 	}
 	
+	/*
+	 * The unit of memory usage is in the number of pages.
+	 * So, we transform it into memory usage in Byte via 2^(12)
+	 */ 
 	CMAtemp = CMAtemp << 2;
 	CMAtemp = (CMAtemp * (unsigned long) (Alloc_rate * 1024)) >> 10;
-
 
 	/* obtain unused memory amount via function do_sysinfo() */
 	do_sysinfo(&sinfo);
