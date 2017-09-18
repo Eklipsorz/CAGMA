@@ -1,6 +1,8 @@
 #include "memAlloc.h"
-#define Alloc_Period_Length_ms 3000
-#define Allocate_Period_Length_us Alloc_Period_Length_ms*1000
+
+/* the length of the period for adjusting memory */
+#define Period_Length_ms 3000					
+#define Period_Length_us Period_Length_ms*1000
 
 static bool hasAVM = 0;
 xentoollog_logger_stdiostream *logger = NULL;
@@ -8,6 +10,7 @@ libxl_ctx *ctx = NULL;
 xenstat_node *cur_node = NULL;
 xenstat_handle *xhandle = NULL;
 
+/* import the four functions into this file from queue.c */
 extern void allocate();
 extern void release();
 extern void listEntry();
@@ -152,7 +155,7 @@ int main()
 		
 		allocate();
 		
-		usleep(Allocate_Period_Length_us);
+		usleep(Period_Length_us);
 		count++;
 		if (count == 245)
 			break;
