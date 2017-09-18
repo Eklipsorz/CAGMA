@@ -4,7 +4,7 @@
 #define Period_Length_ms 3000					
 #define Period_Length_us Period_Length_ms*1000
 
-static bool hasAVM = 0;
+static bool is_memory_sufficient = 0;
 xentoollog_logger_stdiostream *logger = NULL;
 libxl_ctx *ctx = NULL;
 xenstat_node *cur_node = NULL;
@@ -29,9 +29,9 @@ static void check_And_noify_each_VM(libxl_dominfo *info,int NRvm)
 	ret[0] = (AllfreeMem > 0 ? '1' : '0');
 
 	if (ret[0]=='1')
-		hasAVM = 1;
+		is_memory_sufficient = 1;
 	else 
-		hasAVM = 0;
+		is_memory_sufficient = 0;
 	
 	xs = xs_daemon_open();
 		
@@ -150,7 +150,7 @@ int main()
 		}
 		
 		//listEntry();
-		if (hasAVM == '0')
+		if (is_memory_sufficient == '0')
 			release();
 		
 		allocate();
