@@ -15,7 +15,7 @@
 
 #define minmsglevel XTL_PROGRESS
 #define NRsample 5			/* collect the last NRsample amounts (AVM - CMA) */
-#define threshold_relea 10
+#define threshold_relea 10		/* the constraint of times for releasing memory */
 #define Mem_minimum 262144		/* Minimum memory amount */
 #define Mem_maximum 1536000		/* Maxmium memory amount */
 #define Alloc_rate 1.0			/* Avoid thrashing via allocating more memory to vm */
