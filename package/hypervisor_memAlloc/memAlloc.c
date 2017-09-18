@@ -4,7 +4,13 @@
 #define Period_Length_ms 3000					
 #define Period_Length_us Period_Length_ms*1000
 
+/* 
+ * the variable represents whether there are sufficient memory
+ * 	0: insufficient memory
+ * 	1: sufficient memory
+ */
 static bool is_memory_sufficient = 0;
+
 xentoollog_logger_stdiostream *logger = NULL;
 libxl_ctx *ctx = NULL;
 xenstat_node *cur_node = NULL;
@@ -16,6 +22,7 @@ extern void release();
 extern void listEntry();
 extern void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA);
 
+/* check whether there are sufficient memory and return its result to each VM periodically */
 static void check_And_noify_each_VM(libxl_dominfo *info,int NRvm)
 {
 	struct xs_handle *xs;
@@ -47,6 +54,7 @@ static void check_And_noify_each_VM(libxl_dominfo *info,int NRvm)
 	xs_daemon_close(xs);
 }
 
+/* obtain critical memory amount and available memory amount via xenstore and path in xenstore */
 static void getInfoOfVM(char *path,int64_t *ALM,int64_t *AVM,int64_t *CMA)
 {
 	char *result[3], ALMPath[50], AVMPath[50], CMAPath[50];
@@ -73,6 +81,7 @@ static void getInfoOfVM(char *path,int64_t *ALM,int64_t *AVM,int64_t *CMA)
 
 }
 
+/* initialize interface that has sufficient permissions to read/write xenstore */
 static void init_env()
 {
 	bool progress_use_cr;
@@ -97,8 +106,8 @@ static void init_env()
 	
 }
 
-/**********************initialize linkedlist*********************/	
 
+/* initialize two queues, called Alloc and Relea resprespectively */
 static void init_LList()
 {
 	Alloc = (entry *) calloc(1,sizeof(entry));
@@ -111,6 +120,7 @@ static void init_LList()
 	
 }	
 
+/* the main function in memAlloc project */
 int main()
 {
 
