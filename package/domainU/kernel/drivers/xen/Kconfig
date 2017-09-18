@@ -280,10 +280,11 @@ config XEN_ACPI
 	def_bool y
 	depends on X86 && ACPI
 
-config XEN_MEMORY_ALLOCATOR
-	bool "Xen memory allocator"
+config CAGMA_MEMORY_REQUESTER
+	bool "CAGMA MEM-REQUESTER"
 	default y
 	help
-	  The allocator can help kswapd to allocate memory. In other word,
-	  this allocator is agent for allocating more memory. 
+	The interface helps guest OS send a request for 
+	adjusting memory such that there are sufficient 
+	memory
 endmenu
