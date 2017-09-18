@@ -525,9 +525,8 @@ int libxl__build_post(libxl__gc *gc, uint32_t domid,
         }
     }
 
-    //ents = libxl__calloc(gc, 12 + (info->max_vcpus * 2) + 2, sizeof(char *));
-    //ents = libxl__calloc(gc, 12 + (info->max_vcpus * 2) + 6, sizeof(char *));
-    ents = libxl__calloc(gc, 12 + (info->max_vcpus * 2) + 8, sizeof(char *));
+    /* allocate some memory to 18 + number of max_vcpus x 2 entries */ 
+    ents = libxl__calloc(gc, 12 + (info->max_vcpus * 2) + 6, sizeof(char *));
     ents[0] = "memory/static-max";
     ents[1] = GCSPRINTF("%"PRId64, info->max_memkb);
     ents[2] = "memory/target";
@@ -546,14 +545,14 @@ int libxl__build_post(libxl__gc *gc, uint32_t domid,
                             ? "online" : "offline";
     }
 	
-	/* 
-	 * add three entries into xenstore such that every vm can store its critical memory amount, 
-	 * available memory amount (unused memory amount) and variable warning. In addition, the 
-	 * variable warning helps each vm know whether there are sufficient memory for additionally 
-	 * allocating memory to vm. The variable is represented in boolean value:
-	 * 	0: represents that there is no any memory for allocating memory to vm
-	 * 	1: represents that there are sufficient memory
-     	 */ 
+   /* 
+    * add three entries into xenstore such that every vm can store its critical memory amount, 
+    * available memory amount (unused memory amount) and variable warning. In addition, the 
+    * variable warning helps each vm know whether there are sufficient memory for additionally 
+    * allocating memory to vm. The variable is represented in boolean value:
+    * 	0: represents that there is no any memory for allocating memory to vm
+    * 	1: represents that there are sufficient memory
+    */ 
     ents[12+(i*2)]="memory/CMA";
     ents[12+(i*2)+1] = GCSPRINTF("%lld", (long long int) -1);
     ents[12+(i+1)*2]="memory/AVM";
