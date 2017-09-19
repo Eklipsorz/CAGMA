@@ -186,7 +186,6 @@ int main()
  		 * condition (CMA > AVM or CMA < AVM). If so, then the vm whcih meets that
  		 * is put into the proper queue via calling the function addEntry(). 
  		 */ 
-		printf("nb_domain:%d\n",nb_domain);
 		for (j = 1;j < nb_domain;j++)
 		{
 
@@ -206,16 +205,12 @@ int main()
  			 * needs more memory or is needed to been released to the hypervisor.
  			 * If so, then vm cannot be considered into the queue for avoid thrashing.
  			 */  	
-			ALM=300;
-			AVM=200;
-			CMA=300;			
 			if (CMA == -1 || CMA == AVM)
 				continue;	
 			
 			addEntry(info[j].domid, path, ALM, AVM, CMA);
 		}
 
-		listEntry();	
 		/*
  		 * check whether there is any memory for allocating memory
  		 * if so, the hypervisor begins to releases memory of some vms.
