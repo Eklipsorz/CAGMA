@@ -248,35 +248,37 @@ void release(void)
 	
 	xs = xs_daemon_open();
 	
+	/* travel the list to release memory */	
 	for (temp = Relea->next ; temp != Relea; temp = temp->next)
 	{
-	
+		/* count the times of releasing memory for each vm, whose memory is releasable */	
 		temp->releaCount = temp->releaCount + 1;
-		
+	
+		/* 
+ 		 * check whether the times for each vm meets threshold_relea 
+ 		 * if so, then it call Tryto_release_more() to release more memory
+ 		 * if not, then its releasable amount is AVM - (Alloc_rate* CMA) 
+ 		 */	
 		if (temp->releaCount >= threshold_relea)
 			amount = Tryto_release_more(temp);
 		else
 			amount = temp->AVM - (int64_t)( Alloc_rate*(float)temp->CMA );
-		/*printf("before: %"PRId64" after: %"PRId64" AVM%"PRId64" amount:%"PRId64" \n",temp->CMA,\
-						(int64_t)(Alloc_rate*(float)temp->CMA), temp->AVM, amount);
-		*/
-	
+		
+		/* calculate the new allocated memory amount */
 		Target = temp->ALM - amount;
-		if (Target < Mem_minimum)
+		if (Target < Mem_minimum)		/* if the expected amount is less than minimum amount */ 
 			Target = Mem_minimum;
 			
-				
+		/* obtain the path of memory/target in Xenstore */			
 		sprintf(ALMpath,"%s/target",temp->path);
 		sprintf(ALM,"%"PRId64,Target);		
-	//	printf("	release: %s %"PRId64" \n",temp->path,Target);		
-		//printf("%s %s %"PRId64 " count %d\n",ALMpath,ALM,Target,temp->releaCount);
-		//printf("ans: %lld %"PRId64"\n",(long long int)Target,Target);
 	
+		/* adjust the amount to the new amount */
 		trans = xs_transaction_start(xs);
 		xs_write(xs,trans,ALMpath,ALM,strlen(ALM));
-		xs_transaction_end(xs,trans,false);	
+		xs_transaction_end(xs,trans,false);
+		/* store last NRsampele amounts for future calculation */	
 		temp->sample[temp->releaCount % NRsample] = temp->AVM - amount;
-		//printf("sample AVM: %"PRId64 " CMA: %"PRId64 " \n",temp->AVM,temp->CMA);
 	}	
 	xs_daemon_close(xs);		
 	
