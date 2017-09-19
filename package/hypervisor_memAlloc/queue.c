@@ -201,37 +201,29 @@ int64_t Tryto_release_more(entry *e)
 	int64_t temp,mean = 0;
 	int i;
 	
-//	printf("entering tryto mode\n");	
+	/* calculate average of last NRsample amounts */
 	for (i = 0 ; i < NRsample ; i++)
-	{
 		mean = mean + e->sample[i];
-		//printf("sample: %"PRId64 " \n",e->sample[i]);
-	}
 	mean = mean / NRsample;	
 
-	//printf("%"PRId64 " \n",mean);
-	if (e->AVM == 0)
+	if (e->AVM == 0)		/* if a VM does not has any memory, then return 0 for avoiding error */
 		return 0;
-	else if (mean > e->AVM)
-	{
-	//	printf("case 1\n");
+	else if (mean > e->AVM)		/* if the expected amount is bigger than AVM, then */
+	{				/* the releasable amount is AVM for avoiding error */
 		temp = e->AVM ;
-		e->CMA = 0;
+		/* change CMA to 0 for misestimating the new allocated amount in the future */
+		e->CMA = 0;		
 		updateCMA(e->path,0);	
 	}
-	else if ( mean > (e->AVM - e->CMA))
-	{
-	//	printf("case 2\n");
+	else if (mean > (e->AVM - e->CMA))  /* if there are more unused memory amount, then */
+	{				    /* the releasble amount is bigger one or variable mean  */	
 		temp = mean;
+		/* change CMA to AVM - mean for misestimating the new allocated amount in the future */
 		e->CMA = e->AVM - mean;
 		updateCMA(e->path,e->CMA);
 	}
-	else
-	{
-	//	printf("case 3\n");
-		temp = (e->AVM - (int64_t)(Alloc_rate*(float)e->CMA));
-	}
-	//printf("CMA %"PRId64 " amount %"PRId64 " AVM %"PRId64 " %mean %"PRId64 "\n",e->CMA,temp,e->AVM,mean);
+	else				    /* the amount is AVM - (Relea*CMA) when there are less memory */
+		temp = (e->AVM - (int64_t)(Relea_rate*(float)e->CMA));
 	
 	return temp;
 }
@@ -257,17 +249,17 @@ void release(void)
 		/* 
  		 * check whether the times for each vm meets threshold_relea 
  		 * if so, then it call Tryto_release_more() to release more memory
- 		 * if not, then its releasable amount is AVM - (Alloc_rate* CMA) 
+ 		 * if not, then its releasable amount is AVM - (Relea_rate* CMA) 
  		 */	
 		if (temp->releaCount >= threshold_relea)
 			amount = Tryto_release_more(temp);
 		else
-			amount = temp->AVM - (int64_t)( Alloc_rate*(float)temp->CMA );
+			amount = temp->AVM - (int64_t)(Relea_rate*(float)temp->CMA );
 		
 		/* calculate the new allocated memory amount */
 		Target = temp->ALM - amount;
 		if (Target < Mem_minimum)		/* if the expected amount is less than minimum amount */ 
-			Target = Mem_minimum;
+			Target = Mem_minimum;		/* , then the new amount is set to minimum amount */ 
 			
 		/* obtain the path of memory/target in Xenstore */			
 		sprintf(ALMpath,"%s/target",temp->path);

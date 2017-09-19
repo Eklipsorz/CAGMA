@@ -19,6 +19,7 @@
 #define Mem_minimum 262144		/* Minimum memory amount */
 #define Mem_maximum 1536000		/* Maxmium memory amount */
 #define Alloc_rate 1.0			/* Avoid thrashing via allocating more memory to vm */
+#define Relea_rate 1.0			/* Avoid thrashing via release less memory to vm */
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 /* 
