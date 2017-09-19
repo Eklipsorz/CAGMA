@@ -160,7 +160,7 @@ static void __exit supCenter_exit(void)
 	unregister_xenbus_watch(&xbus_watch_target);
 	unregister_xenbus_watch(&xbus_watch_warning);
 
-	
+	/* remove all dalayable generated from template checkMFree_work	in scheduler */
 	cancel_delayed_work(&checkMFree_work);
 	
 	printk(KERN_INFO "Goodbye\n");
