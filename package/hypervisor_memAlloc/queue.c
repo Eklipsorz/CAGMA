@@ -143,24 +143,6 @@ void updateCMA(char *path,int64_t newCMA)
 
 }
 
-/* notify selected vm of that its allocated memory is bigger than maximum amount */
-void notify_vm(char *path)
-{
-	struct xs_handle *xs;
-	xs_transaction_t trans;
-	char isMaxALMPath[50],isMaxALM[1];	
-
-	isMaxALM[0] = '1';
-	sprintf(isMaxALMPath,"%s/isMaxALM",path);	
-	
-	xs = xs_daemon_open();
-	trans = xs_transaction_start(xs);
-	xs_write(xs,trans,isMaxALMPath,isMaxALM,1);
-	xs_transaction_end(xs,trans,false);	
-
-	xs_daemon_close(xs);
-
-}
 
 /* allocate more memory to each vm, which meets the condition (CMA > AVM) */
 void allocate(void)
@@ -189,15 +171,14 @@ void allocate(void)
 				Target = AllfreeMem;
 			else if (Target > Mem_maximum)
 				Target = Mem_maximum;
-				//notify_vm(temp->path);
-		
+			
 			sprintf(ALMpath,"%s/target",temp->path);
 			sprintf(ALM,"%"PRId64,Target);		
 			printf("	allocate: %s %"PRId64" , TAM: %"PRId64" \n",temp->path,Target,AllfreeMem);		
 			trans = xs_transaction_start(xs);
 			xs_write(xs,trans,ALMpath,ALM,strlen(ALM));
 			xs_transaction_end(xs,trans,false);	
-		
+			
 		}
 	}	
 

@@ -96,10 +96,8 @@ static void getInfoOfVM(char *path,int64_t *ALM,int64_t *AVM,int64_t *CMA)
 
 	xs_daemon_close(xs);	
 
-	/*
- 	 * Transfer the three values (their variable type is char *) into the value in int64_t 
- 	 */	
-	sscanf(result[0],"%"PRId64,ALM);	
+	/* Transfer the three values (their variable type is char *) into the value in int64_t */
+	sscanf(result[0],"%"PRId64,ALM);
 	sscanf(result[1],"%"PRId64,AVM);	
 	sscanf(result[2],"%"PRId64,CMA);	
 
@@ -188,6 +186,7 @@ int main()
  		 * condition (CMA > AVM or CMA < AVM). If so, then the vm whcih meets that
  		 * is put into the proper queue via calling the function addEntry(). 
  		 */ 
+		printf("nb_domain:%d\n",nb_domain);
 		for (j = 1;j < nb_domain;j++)
 		{
 
@@ -207,12 +206,16 @@ int main()
  			 * needs more memory or is needed to been released to the hypervisor.
  			 * If so, then vm cannot be considered into the queue for avoid thrashing.
  			 */  	
+			ALM=300;
+			AVM=200;
+			CMA=300;			
 			if (CMA == -1 || CMA == AVM)
 				continue;	
 			
 			addEntry(info[j].domid, path, ALM, AVM, CMA);
 		}
-		
+
+		listEntry();	
 		/*
  		 * check whether there is any memory for allocating memory
  		 * if so, the hypervisor begins to releases memory of some vms.
@@ -223,6 +226,7 @@ int main()
 		/*
  		 * Allocate memory to some vms, which needs more memory. 
  		 */	
+		printf("hiiiii\n");
 		allocate();
 		
 		/* set the length of period for adjusting memory. */ 
