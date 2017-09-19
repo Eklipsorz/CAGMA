@@ -25,13 +25,10 @@
 #define PROC_ENABLE_RUN "enabler"
 #define PROCFS1_NAME "buffer"
 #define MainProg "FixedAccMem"
-/* 
- * This interface allows the system to be interrupted for doing the packet 
- * when it receives the packet.
- */
 
-static void _noify_to_procss_(struct work_struct *);
-static DECLARE_DELAYED_WORK(_noify_to_procss_work,_noify_to_procss_);
+/* declare the template of task */
+static void _notify_to_procss_(struct work_struct *);
+static DECLARE_DELAYED_WORK(_notify_to_procss_work,_notify_to_procss_);
 
 MODULE_DESCRIPTION("Noify meminfo");
 MODULE_AUTHOR("Orion <sslouis25@icloud.com>");
@@ -129,7 +126,7 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
 }
 
 
-static void _noify_to_procss_(struct work_struct *ws)
+static void _notify_to_procss_(struct work_struct *ws)
 {
 
 	/*
@@ -143,7 +140,7 @@ static void _noify_to_procss_(struct work_struct *ws)
 	if(enable_to_begin)
 		round++;
 
-	schedule_delayed_work(&_noify_to_procss_work,collect_period);
+	schedule_delayed_work(&_notify_to_procss_work,collect_period);
 	
 }
 
@@ -249,7 +246,7 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 	
 	sscanf(fileNumTemp,"%d",&fileNum);
 	
-	schedule_delayed_work(&_noify_to_procss_work,0);
+	schedule_delayed_work(&_notify_to_procss_work,0);
 
 	return 0;
 }
@@ -308,7 +305,7 @@ static int __init ProcNoify_init(void)
 static void __exit ProcNoify_exit(void)
 {
 
-	cancel_delayed_work(&_noify_to_procss_work);
+	cancel_delayed_work(&_notify_to_procss_work);
 	remove_proc_entry(PROCFS1_NAME, NULL);
 	remove_proc_entry(PROC_ENABLE_RUN, NULL);
 	printk(KERN_INFO "Goodbye\n");
