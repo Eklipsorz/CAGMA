@@ -1,0 +1,10 @@
+#!/bin/bash
+
+
+for i in $(seq 2391 2396)
+do
+	firewall-cmd --zone=public --add-port=$i/tcp --permanent
+	firewall-cmd --zone=public --add-port=$i/udp --permanent
+done
+
+	firewall-cmd --reload

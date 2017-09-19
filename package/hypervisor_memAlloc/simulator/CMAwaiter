@@ -1,0 +1,57 @@
+#!/bin/bash
+enable_test_CAGMA=1
+./Beginwaiter &
+if [ "$enable_test_CAGMA" -eq "1" ]; then
+
+
+	for i in $(seq 1 10)
+	do
+		xl mem-set vm1 512 && xl mem-set vm2 512 && xl mem-set vm3 512
+		xl mem-max vm1 2500 && xl mem-max vm2 2500 && xl mem-max vm3 2500
+	#	xl mem-set vm1 512 && xl mem-set vm3 512
+	#	xl mem-max vm1 2500 && xl mem-max vm3 2500
+
+		echo "initial memory............done"
+		sleep 1
+		echo "going to run"
+		./memAlloc
+		
+		nc -l 2394 && echo "CMA: vm1 is ready to run"
+		nc -l 2395 && echo "CMA: vm2 is ready to run"
+		nc -l 2396 && echo "CMA: vm3 is ready to run"
+
+	 
+		sleep 5
+		echo "CMA: ready to sync all vms"
+
+		ret1=1
+		ret2=1
+		ret3=1	
+		msg="none"
+
+		while [ "$msg" != "hi" ]
+	   	do
+       			if [ "$ret1" -eq "0" ] && [ "$ret2" -eq "0" ] && [ "$ret3" -eq "0" ]; then
+				msg="hi"
+			fi
+#       			if [ "$ret1" -eq "0" ] && [ "$ret3" -eq "0" ]; then
+#				msg="hi"
+#			fi
+	#		sleep 1	
+
+			echo $msg | nc 203.64.125.27 2390
+       			ret1=`echo $?`    	
+       			echo $msg | nc 203.64.125.66 2390 
+       			ret2=`echo $?`    
+			echo $msg | nc 203.64.125.28 2390 
+       			ret3=`echo $?`    
+
+		done
+	
+	
+
+	done
+
+fi
+
+

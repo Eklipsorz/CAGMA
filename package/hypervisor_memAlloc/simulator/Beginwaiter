@@ -1,0 +1,35 @@
+#!/bin/bash
+
+
+for i in $(seq 1 10)
+do	
+	nc -l 2391 && echo "vm1 is ready to run"
+	nc -l 2392 && echo "vm2 is ready to run"
+	nc -l 2393 && echo "vm3 is ready to run"
+
+	sleep 5
+	echo "ready to sync all vms"
+	ret1=1
+	ret2=1
+	ret3=1
+	msg="none"
+
+	while [ "$msg" != "hi" ]
+   	do
+     #		if [ "$ret1" -eq "0" ] && [ "$ret3" -eq "0" ]; then
+      		if [ "$ret1" -eq "0" ] && [ "$ret2" -eq "0" ] && [ "$ret3" -eq "0" ]; then
+			msg="hi"
+		fi
+
+		echo $msg | nc 203.64.125.27 2390
+       		ret1=`echo $?`    	
+      		echo $msg | nc 203.64.125.66 2390 
+    		ret2=`echo $?`    
+		echo $msg | nc 203.64.125.28 2390 
+       		ret3=`echo $?`    
+
+	done
+
+done
+
+
