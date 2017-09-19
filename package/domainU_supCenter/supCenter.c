@@ -117,21 +117,18 @@ static int __init supCenter_init(void)
 
 	int err;
 
+	/* schedule a delayable task after 0ms */
 	schedule_delayed_work(&checkMFree_work,0);
-	//schedule_delayed_work(&releaseMem_work,6000);
+
+	/* register two watches, called memory/target and memory/warning */
 	err = register_xenbus_watch(&xbus_watch_target);
 	err = register_xenbus_watch(&xbus_watch_warning);
-//	xenbus_transaction_start(&trans);
-//	output = (char *)xenbus_read(trans,"memory","static-max",NULL);	
-//	xenbus_transaction_end(trans, 0);
-//
-//	sscanf(output,"%lld",&Mmax);
-	//printk(KERN_INFO "HI I'M %lld\n",Mmax);
+	
+	/* initialize the four variables */
 	can_provide_mem = 1;
 	is_less_than_maxALM = 1;
 	enable_to_run_memAlloc = 1;
 	Mmax = 1536000; 
-//	Mmax = 819200; 
 	
 	return 0;
 
@@ -140,13 +137,18 @@ static int __init supCenter_init(void)
 /* this function to be called at module removeal time */ 
 static void __exit supCenter_exit(void)
 {
+	/* reset the three variables */
 	is_less_than_maxALM = 0;
 	can_provide_mem = 0;
 	enable_to_run_memAlloc = 0;
+
+	/* remove the two watches from guest OS */
 	unregister_xenbus_watch(&xbus_watch_target);
 	unregister_xenbus_watch(&xbus_watch_warning);
+
+	
 	cancel_delayed_work(&checkMFree_work);
-	//cancel_delayed_work(&releaseMem_work);
+	
 	printk(KERN_INFO "Goodbye\n");
 }
  
