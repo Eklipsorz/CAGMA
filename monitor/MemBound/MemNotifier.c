@@ -63,25 +63,9 @@ struct vm_operations_struct mmap_vm_ops = {
         //.nopage =   mmap_nopage,                              //--changed
 };
 
-static int sigtopid(struct task_struct *tsk)
-{
-	struct siginfo info;
-	struct task_struct *task=NULL;
-	int sig = SIGHUP;
-	task = tsk;
-	info.si_signo = sig;
-
-	info.si_errno = 0;		
-	info.si_code = SI_USER;		
-	info.si_pid = get_current()->pid;		
-	info.si_uid = 0;
-	
-	if(task!=NULL)
-		return send_sig_info(sig,&info,task);
-	return -1;
-}
 
 
+/* set a callback function on the time a file is opened */
 static struct file* file_open(const char* path, int flags, int rights) 
 {	
 	struct file* filp = NULL;
@@ -103,7 +87,7 @@ static struct file* file_open(const char* path, int flags, int rights)
 	return filp;
 }
 
-
+/* set a callback function on the time a file is closed */
 void file_close(struct file* file) {
 	filp_close(file, NULL);
 }
@@ -125,21 +109,12 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
 
 }
 
-
+/* set a timer to count the times for collecting data */ 
 static void _notify_to_procss_(struct work_struct *ws)
 {
 
-	/*
-	struct task_struct *task;
-	
-	for_each_process(task) {
-		if (!strcmp(task->comm,MainProg))
-			sigtopid(task);
-	}
-	*/
 	if(enable_to_begin)
 		round++;
-
 	schedule_delayed_work(&_notify_to_procss_work,collect_period);
 	
 }
@@ -198,7 +173,7 @@ static int mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 /*********************************************************
  *                  ProcFS section End
  *********************************************************/
-
+/* set a callback of /proc/buffer to handle collecting the data from each memory-bound task */
 static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,loff_t *data)
 {
  	struct semaphore sem; 
@@ -234,7 +209,10 @@ static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,
 		
    	return count;
 }
-
+/* 
+ * set a callback function of /proc/enabler. when reading or writing it,
+ * the system call this function to activate Data Collector 
+ */
 static ssize_t _handling_notification_(struct file *file, const char *buffer, size_t count,loff_t *data)
 {
 	char fileNumTemp[10];
@@ -250,7 +228,7 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 
 	return 0;
 }
-
+/* Create /proc/enabler in /proc to receive a command, which activate Data Collector */
 static int create_enabler(void)
 {
 	static struct proc_dir_entry *p;
@@ -270,6 +248,8 @@ static int create_enabler(void)
 
 }
 
+/* Create entry /proc/buffer in /proc to collect the data from each memory-bound task */
+/* This is a part of Data Collecter */
 static int create_buffer(void)
 {
 	static struct proc_dir_entry *p;
@@ -293,21 +273,28 @@ static int create_buffer(void)
  *********************************************************/
 
 
+/* initialize this module */
 static int __init ProcNoify_init(void)
 {
 	
+	/* create two entries in /proc, called buffer and enabler */
 	create_buffer();
 	create_enabler();
+	
 	return 0;
 }
 
  
+/* this function to be called at module removeal time */ 
 static void __exit ProcNoify_exit(void)
 {
 
+	/* remove all dalayable generated from template _notify_to_process_work	in scheduler */
 	cancel_delayed_work(&_notify_to_procss_work);
+	/* remove two entries in /proc, called buffer and enabler */
 	remove_proc_entry(PROCFS1_NAME, NULL);
 	remove_proc_entry(PROC_ENABLE_RUN, NULL);
+
 	printk(KERN_INFO "Goodbye\n");
 }
  
