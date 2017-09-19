@@ -1,1 +1,0 @@
-cmd_/root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/ProcNoify_accMem.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/ProcNoify_accMem.ko /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/ProcNoify_accMem.o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/ProcNoify_accMem.mod.o

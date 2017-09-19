@@ -1,1 +1,0 @@
-cmd_/root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/ProcNoify.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/ProcNoify.ko /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/ProcNoify.o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/ProcNoify.mod.o
