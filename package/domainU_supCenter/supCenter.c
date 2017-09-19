@@ -18,12 +18,7 @@
  * This interface allows the system to be interrupted for doing the packet 
  * when it receives the packet.
  */
-/*
-extern bool is_less_than_maxALM;
-extern bool enable_to_run_memAlloc;
-extern bool can_provide_mem ;
-extern long long int Mmax,CMA;
-*/
+
 extern int do_sysinfo(struct sysinfo *info);
 
 
@@ -34,47 +29,10 @@ MODULE_LICENSE("GPL");
 static void checkMFree(struct work_struct *);
 static DECLARE_DELAYED_WORK(checkMFree_work,checkMFree);
 
-/*static void releaseMem(struct work_struct *);
-static DECLARE_DELAYED_WORK(releaseMem_work,releaseMem);
-
-static void releaseMem(struct work_struct *ws)
-{
-	struct xenbus_transaction trans;
-	struct sysinfo sinfo;
-	long long int availMem,totalMem;
-	long long int amount;
-	char *Target;
-	
-	do_sysinfo(&sinfo);
-	//AVM = sinfo.freeram >> 10;
-	availMem = sinfo.freeram >> 10;
-	
-	if (availMem > CMA)
-	{
-	
-		xenbus_transaction_start(&trans);
-		Target = (char *)xenbus_read(trans, "memory","target",NULL);
-		xenbus_transaction_end(trans, 0);
-		sscanf(Target,"%lld",&totalMem);
-
-
-		
-		amount = availMem - CMA;
-		if (totalMem - amount > Mem_minimum)
-			totalMem = totalMem - amount;
-		else		
-			totalMem = Mem_minimum;
-		printk("hitest hi\n");
-		xenbus_transaction_start(&trans);
-		xenbus_printf(trans, "memory","target","%lld",totalMem);
-		xenbus_transaction_end(trans, 0);
-		
-	}
-		schedule_delayed_work(&releaseMem_work,6000);
-
-
-}
-*/
+/* 
+ * The template of a task, which periodically update the value
+ * of availabe memory in this machine.
+ */
 static void checkMFree(struct work_struct *ws)
 {
 	struct xenbus_transaction trans;
@@ -92,7 +50,7 @@ static void checkMFree(struct work_struct *ws)
 	schedule_delayed_work(&checkMFree_work,250);
 }
 
-
+/* set a callback function of memory/target watch. */
 static void checkALM_watch(struct xenbus_watch *watch,
 			      const char **vec, unsigned int len)
 {
@@ -115,6 +73,7 @@ static void checkALM_watch(struct xenbus_watch *watch,
 
 }
 
+/* set a callback function of memory/warning watch */
 static void warning_watch(struct xenbus_watch *watch,
 			      const char **vec, unsigned int len)
 {
@@ -140,18 +99,19 @@ static void warning_watch(struct xenbus_watch *watch,
 }
 
 
-
+/* set a watch to monitor whether memory/target is changed */
 static struct xenbus_watch xbus_watch_target = {
 	.node = "memory/target",
 	.callback = checkALM_watch
 };
 
+/* set a watch to monitor whether memory/warning is changed */
 static struct xenbus_watch xbus_watch_warning = {
 	.node = "memory/warning",
 	.callback = warning_watch
 };
 
-
+/* initialize supCenter module */
 static int __init supCenter_init(void)
 {
 
@@ -177,7 +137,7 @@ static int __init supCenter_init(void)
 
 }
 
- 
+/* this function to be called at module removeal time */ 
 static void __exit supCenter_exit(void)
 {
 	is_less_than_maxALM = 0;
