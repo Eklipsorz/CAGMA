@@ -39,14 +39,16 @@ static void checkMFree(struct work_struct *ws)
 	struct sysinfo sinfo;
 	long long int availMem;
 
+	/* obtain unused memory amount via do_sysinfo() */
 	do_sysinfo(&sinfo);
-	//AVM = sinfo.freeram >> 10;
 	availMem = sinfo.freeram >> 10;
-	
+
+	/* update the new amount into memory/AVM in xenstore */
 	xenbus_transaction_start(&trans);
 	xenbus_printf(trans, "memory","AVM", "%lld",availMem);
 	xenbus_transaction_end(trans, 0);
-	printk("check is_less_than_maxALM:%d\n",is_less_than_maxALM);
+
+	/* schedule a delayable task for each 250ms */
 	schedule_delayed_work(&checkMFree_work,250);
 }
 
@@ -58,11 +60,19 @@ static void checkALM_watch(struct xenbus_watch *watch,
 	unsigned long long temp;
 	char *Target;
 	
+	/* obtain allocated memory amount via xenstore */
 	xenbus_transaction_start(&trans);
 	Target = (char *)xenbus_read(trans, "memory","target",NULL);
 	xenbus_transaction_end(trans, 0);
+
+	/* transfer string into unsigned long long int */
 	sscanf(Target,"%llu",&temp);
-	
+
+	/* 
+	 * check whether the allocated memory amount is bigger than
+	 * maximum amount. If so, the guest OS set is_less_than_maxALM
+	 * to 0; if not, is_less_than_maxALM is set to 1.
+	 */
 	if (!is_less_than_maxALM)
 	{	
 		if (temp < Mmax)
@@ -80,20 +90,24 @@ static void warning_watch(struct xenbus_watch *watch,
 	struct xenbus_transaction trans;
 	char *Target;
 
-	//AVM = sinfo.freeram >> 10;
-	
+
+	/* obtain the value of memory/warning in xenstore and update the value of memory/CMA. */
 	xenbus_transaction_start(&trans);
 	
 	xenbus_printf(trans, "memory","CMA", "%lld",CMA);
 	Target = (char *)xenbus_read(trans, "memory","warning",NULL);
 
 	xenbus_transaction_end(trans, 0);
-	
+
+	/* set can_provide_mem to 0/1 according to the value of memory/warning */
+	/* 
+	 * If the value is 1, it represents that there are sufficient physical memory
+	 * If not, it represents that there is no any physical memory
+	 */
 	if (Target[0] == '1')
 		can_provide_mem = 1;
 	else if(Target[0] == '0')
 		can_provide_mem = 0;
-//	printk(KERN_INFO "knock knock %d\n",can_provide_mem);	
 
 
 }
