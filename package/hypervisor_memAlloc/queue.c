@@ -46,27 +46,43 @@ void UpdateEntry(entry *e,int64_t ALM,int64_t AVM,int64_t CMA)
 void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA)
 {	
 	entry *temp = NULL, *head = NULL,*found = NULL;
-	
+
+	/* 
+ 	 * determine which queue is proper for this vm according to (CMA > AVM) 
+ 	 * if CMA > AVM, then the variable head is Alloc
+ 	 * if CMA < AVM, then the variable head is Relea
+ 	 */	
 	head = (AVM < (int64_t)((float)(Alloc_rate*CMA))) ? Alloc : Relea;
-	
-	if ((found = FindEntry(id,head)))
-	{
+
+	/* Update old info of the existing entry or add new entry into proper queue */	
+	if ((found = FindEntry(id,head)))	/* Update old info of the existing entry */
 		UpdateEntry(found,ALM,AVM,CMA);	
-	}
-	else
+	else					/* add new entry into proper queue */
 	{
-		
-		if (head == Alloc)
+	
+		/* 
+ 		 * if a VM has been put into another queue previously, then the info of this 
+ 		 * vm in the queue is removed for updating the status of each vm
+ 		 * 
+ 		 * For example, suppose that the info of a vm has been put into Alloc. However,
+ 		 * the VM is classified into the queue Relea now. For updating the status, the
+ 		 * old info in the queue Alloc need to be removed and the new info is put into 
+ 		 * the queue Relea.
+ 		 */
+		if (head == Alloc)				
 		{
+			/* check whether the old info is in the queue Relea */
 			if ((found = FindEntry(id,Relea)))
 				RemoveEntry(found);			
 		}
 		else if (head == Relea)
 		{
+			/* check whether the old info is in the queue Alloc */
 			if ((found = FindEntry(id,Alloc)))
 				RemoveEntry(found);			
 		}
 
+		/* build a new entry */
 		temp = (entry *)calloc(1,sizeof(entry));	
 		temp->id = id;
 		temp->ALM = ALM;
@@ -76,7 +92,7 @@ void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA)
 		temp->next = temp->prev = temp;
 		sprintf(temp->path,"%s",path);	
 
-
+		/* the new entry is put into the queue */
 		(head->prev)->next = temp;
 		temp->prev = head->prev;
 		head->prev = temp;
@@ -88,12 +104,13 @@ void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA)
 void listEntry()
 {	
 	entry *temp =NULL;
-			
+	
+	/* list all entries from the queue Alloc */	
 	printf("Alloc Set:\n");
 	for (temp = Alloc->next ; temp != Alloc; temp = temp->next)
 		printf("%d: ALM: %"PRId64" AVM: %"PRId64" CMA: %"PRId64"\n",\
 					temp->id,temp->ALM,temp->AVM,temp->CMA);
-
+	/* list all entries from the queue Relea */
 	printf("Relea Set:\n");
 	for (temp = Relea->next ; temp != Relea; temp = temp->next)
 		printf("%d: ALM: %"PRId64" AVM: %"PRId64" CMA: %"PRId64"\n",\
@@ -108,11 +125,16 @@ void updateCMA(char *path,int64_t newCMA)
 	xs_transaction_t trans;
 	char CMApath[50],CMA[10];
 
+	/* obtain the path of memory/CMA */
 	sprintf(CMApath,"%s/CMA",path);	
 	sprintf(CMA,"%"PRId64,newCMA);	
 
+
+	/* update memory/CMA with newCMA via the interface xenstore */
 	xs = xs_daemon_open();
+	
 	trans = xs_transaction_start(xs);
+	
 	xs_write(xs,trans,CMApath,CMA,strlen(CMA));
 	xs_transaction_end(xs,trans,false);	
 
@@ -166,10 +188,8 @@ void allocate(void)
 			if (Target > AllfreeMem)
 				Target = AllfreeMem;
 			else if (Target > Mem_maximum)
-			{
 				Target = Mem_maximum;
-				notify_vm(temp->path);
-			}
+				//notify_vm(temp->path);
 		
 			sprintf(ALMpath,"%s/target",temp->path);
 			sprintf(ALM,"%"PRId64,Target);		
