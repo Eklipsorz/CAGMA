@@ -47,23 +47,6 @@ MODULE_DESCRIPTION("Noify meminfo");
 MODULE_AUTHOR("Orion <sslouis25@icloud.com>");
 MODULE_LICENSE("GPL");
 
-static void mmap_open(struct vm_area_struct *vma);
-static void mmap_close(struct vm_area_struct *vma);
-static int mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf);
-
-struct mmap_info {
-   char *data;     /* the data */
-   int reference;  /* how many times it is mmapped */
-};
-
-struct vm_operations_struct mmap_vm_ops = {
-   .open =     mmap_open,
-   .close =    mmap_close,
-   .fault =    mmap_fault,
-        //.nopage =   mmap_nopage,                              //--changed
-};
-
-
 
 /* set a callback function on the time a file is opened */
 static struct file* file_open(const char* path, int flags, int rights) 
@@ -120,59 +103,11 @@ static void _notify_to_procss_(struct work_struct *ws)
 }
 
 
-/*********************************************************
- *                  DebugFS section Start
- *********************************************************/
-void mmap_open(struct vm_area_struct *vma)
-{         
-	struct mmap_info *info = (struct mmap_info *)vma->vm_private_data;        
-	info->reference++;
-	//      printk("i'm mmap open\n");
-}
-
-void mmap_close(struct vm_area_struct *vma)
-{         
-	struct mmap_info *info = (struct mmap_info *)vma->vm_private_data;
-	info->reference--;
-}
-
-static int mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-{ 
-	struct page *page;         
-	struct mmap_info *info;         
-
-	/* is the address valid? */                     //--changed         
-	/* if (address > vma->vm_end) { 
-	 *	printk("invalid address\n");                 
-	 *	return NOPAGE_SIGBUS;                 
-	 *	return VM_FAULT_SIGBUS;         
-	 * }        
-	 * the data is in vma->vm_private_data 
-	 */         
-
-	info = (struct mmap_info *)vma->vm_private_data;         
-	if (!info->data) {                 
-		printk("no data\n");               
-		return 0;
-         }
-
-	/* get the page */
-	page = virt_to_page(info->data);    
-	/* #define virt_to_page(kaddr)     pfn_to_page(__pa(kaddr) >> PAGE_SHIFT) */         
-	/* increment the reference count of this page */         
-	get_page(page);         
-	vmf->page = page;                                       //--changed         
-	/* TYPE IS THE PAGE FAULT TYPE */        
-	/* IF (TYPE)
-	 	*type = VM_FAULT_MINOR;
-	*/
-	return 0;
-}
-
 
 /*********************************************************
- *                  ProcFS section End
+ *                  ProcFS section Beginning 
  *********************************************************/
+
 /* set a callback of /proc/buffer to handle collecting the data from each memory-bound task */
 static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,loff_t *data)
 {
