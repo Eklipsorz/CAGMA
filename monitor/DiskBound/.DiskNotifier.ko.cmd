@@ -1,0 +1,1 @@
+cmd_/root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/DiskNotifier.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/DiskNotifier.ko /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/DiskNotifier.o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accDisk/DiskNotifier.mod.o

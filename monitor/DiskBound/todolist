@@ -1,0 +1,13 @@
+#define update_period 72000
+
+static void update_fileNum(struct work_struct *);
+static DECLARE_DELAYED_WORK(update_fileNum_work,update_fileNum);
+
+static void update_fileNum(struct work_struct *ws)
+{
+	
+	running_period++;
+	schedule_delayed_work(&update_fileNum,update_period);
+
+
+}

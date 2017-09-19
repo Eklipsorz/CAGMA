@@ -1,0 +1,1 @@
+cmd_/root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/MemNotifier.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/MemNotifier.ko /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/MemNotifier.o /root/LMAProj2016/ExperimentI/Proc/ProcNoify/accMem/MemNotifier.mod.o
