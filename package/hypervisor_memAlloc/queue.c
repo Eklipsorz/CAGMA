@@ -6,6 +6,10 @@ entry *Relea = NULL;
 // 0 = Alloc
 // 1 = Relea
 
+/* 
+ * Find the entry from the queue with entry id
+ * note that entry *from is the queue you wants to find.
+ */
 entry * FindEntry(int id,entry *from)
 {
 	entry *temp = NULL;
@@ -17,6 +21,7 @@ entry * FindEntry(int id,entry *from)
 	return NULL;	
 }
 
+/* Remove the selected entry in the queue */
 void RemoveEntry(entry *e)
 {
 	entry *temp = e;
@@ -26,6 +31,7 @@ void RemoveEntry(entry *e)
 	free(temp);
 }
 
+/* Update the info of the selected entry */
 void UpdateEntry(entry *e,int64_t ALM,int64_t AVM,int64_t CMA)
 {
 	e->ALM = ALM;
@@ -33,6 +39,10 @@ void UpdateEntry(entry *e,int64_t ALM,int64_t AVM,int64_t CMA)
 	e->CMA = CMA;
 }
 
+/*
+ * add the proper queue according to whether the available memory of each vm, 
+ * which is waiting to be queued, meets its critical memory amount.
+ */
 void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA)
 {	
 	entry *temp = NULL, *head = NULL,*found = NULL;
@@ -74,6 +84,7 @@ void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA)
 	}
 }	
 
+/* list all entries from the two queues (Alloc and Relea) respectively. */
 void listEntry()
 {	
 	entry *temp =NULL;
@@ -90,6 +101,7 @@ void listEntry()
 					
 }
 
+/* update memory/CMA with newCMA */
 void updateCMA(char *path,int64_t newCMA)
 {
 	struct xs_handle *xs;
@@ -109,7 +121,7 @@ void updateCMA(char *path,int64_t newCMA)
 
 }
 
-void noify_vm(char *path)
+void notify_vm(char *path)
 {
 	struct xs_handle *xs;
 	xs_transaction_t trans;
@@ -154,7 +166,7 @@ void allocate(void)
 			else if (Target > Mem_maximum)
 			{
 				Target = Mem_maximum;
-				noify_vm(temp->path);
+				notify_vm(temp->path);
 			}
 		
 			sprintf(ALMpath,"%s/target",temp->path);
