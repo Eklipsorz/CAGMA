@@ -155,15 +155,23 @@ void allocate(void)
 	char ALMpath[50],ALM[50];
 	xs = xs_daemon_open();
 	
+	/* travel the list to allocate memory respectively */
 	for (temp = Alloc->next ; temp != Alloc; temp = temp->next)
 	{
+		/* obtain the value of the physical memory */ 
 		cur_node = xenstat_get_node(xhandle, XENSTAT_ALL);
 		AllfreeMem = (int64_t) (xenstat_node_free_mem(cur_node)/1024);
 		
-		if (AllfreeMem <= 0)
+		if (AllfreeMem <= 0)	/* if no any physical memory, the hypervisor does not allocate */
 			return;
-		else
+		else			/* if there are sufficient memory, the hypervisor allocate memory */
 		{
+			
+			/* 
+ 			 * calculate new allocated memory amount according difference between
+ 			 * CMA and AVM. However, if the new amount is bigger than maximum amount,
+ 			 * the new amount is set to maximum amount.
+ 			 */
 			amount = (int64_t)(Alloc_rate*(float)temp->CMA) - temp->AVM;
 			Target = temp->ALM + amount;	
 			
@@ -171,10 +179,12 @@ void allocate(void)
 				Target = AllfreeMem;
 			else if (Target > Mem_maximum)
 				Target = Mem_maximum;
-			
+			/* obtain the path of memory/target in xenstore */	
 			sprintf(ALMpath,"%s/target",temp->path);
-			sprintf(ALM,"%"PRId64,Target);		
+			sprintf(ALM,"%"PRId64,Target);	
+			/* display the expected the status of the allocation */	
 			printf("	allocate: %s %"PRId64" , TAM: %"PRId64" \n",temp->path,Target,AllfreeMem);		
+			/* adjust allocated memory amount to the new amount */
 			trans = xs_transaction_start(xs);
 			xs_write(xs,trans,ALMpath,ALM,strlen(ALM));
 			xs_transaction_end(xs,trans,false);	
