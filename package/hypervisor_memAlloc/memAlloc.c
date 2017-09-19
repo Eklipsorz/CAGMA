@@ -105,20 +105,24 @@ static void getInfoOfVM(char *path,int64_t *ALM,int64_t *AVM,int64_t *CMA)
 
 }
 
-/* initialize interface that has sufficient permissions to read/write xenstore */
+/* initialize interface xenstat and xenstore such that the hypervisor has 
+ * sufficient permissions to read/write xenstore and obtain the physical 
+ * memory amount. 
+ */
 static void init_env()
 {
 	bool progress_use_cr;
 	progress_use_cr=0;
 	
 	logger = xtl_createlogger_stdiostream(stderr, minmsglevel,\
-		(progress_use_cr ? XTL_STDIOSTREAM_PROGRESS_USE_CR : 0));	
-
+		(progress_use_cr ? XTL_STDIOSTREAM_PROGRESS_USE_CR : 0));
+	
 	if (libxl_ctx_alloc(&ctx, LIBXL_VERSION, 0, (xentoollog_logger*)logger)) {
 		fprintf(stderr, "cannot init xl context\n");
 		exit(1);
     	}
-	
+
+	/* initialize the handler of xenstat */ 	
 	xhandle = xenstat_init();
 
 	if (xhandle == NULL)
@@ -175,9 +179,7 @@ int main()
 
 	while(1)
 	{
-		/*
- 		 * 
- 		 */	
+		/* obtain the list consisting of all running and number of all running vms */
 		info = libxl_list_domain(ctx, &nb_domain);
 		check_And_notify_each_VM(info,nb_domain);
 		
@@ -188,11 +190,23 @@ int main()
  		 */ 
 		for (j = 1;j < nb_domain;j++)
 		{
-			
+
 			sprintf(path,"/local/domain/%d/memory",info[j].domid);
-			
-			getInfoOfVM(path,&ALM,&AVM,&CMA);	
-			
+		
+			/* obtain memory info of each vm */	
+			getInfoOfVM(path,&ALM,&AVM,&CMA);
+		
+			/* 
+ 			 * CMA == -1:
+ 			 * check whether each vm isn't additionally allocated (except for 
+ 			 * allocation on the time the vm is creadted. If so, then the vm
+ 			 * cannot be considered into the queue for avoiding thrashing.
+ 			 *
+ 			 * CMA == AVM:
+ 			 * check whether the allocated memory amount of each vm does not
+ 			 * needs more memory or is needed to been released to the hypervisor.
+ 			 * If so, then vm cannot be considered into the queue for avoid thrashing.
+ 			 */  	
 			if (CMA == -1 || CMA == AVM)
 				continue;	
 			
@@ -211,11 +225,12 @@ int main()
  		 */	
 		allocate();
 		
-		/*
- 		 * set the length of period for adjusting memory.
- 		 */ 
+		/* set the length of period for adjusting memory. */ 
 		usleep(Period_Length_us);
+		/* count the times for adjusting memory */
 		count++;
+	
+		/* set maximum times for adjusting memory to stop this while */
 		if (count == 245)
 			break;
 	}
