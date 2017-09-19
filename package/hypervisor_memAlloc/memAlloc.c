@@ -23,14 +23,18 @@ extern void listEntry();
 extern void addEntry(int id,char *path,int64_t ALM,int64_t AVM,int64_t CMA);
 
 /* check whether there are sufficient memory and return its result to each VM periodically */
-static void check_And_noify_each_VM(libxl_dominfo *info,int NRvm)
+static void check_And_notify_each_VM(libxl_dominfo *info,int NRvm)
 {
 	struct xs_handle *xs;
 	xs_transaction_t trans;
 	unsigned long AllfreeMem;
 	char Warnpath[50],ret[1];
 	int j;
-	
+
+	/*
+ 	 * check whether there are sufficient memory for acllocating memory to vm
+ 	 * if so, thn is_memory_sufficient is set to 1; otherwise, it is set to 0.
+ 	 */ 	
 	cur_node = xenstat_get_node(xhandle, XENSTAT_ALL);
 	AllfreeMem = (xenstat_node_free_mem(cur_node)/1024);
 	ret[0] = (AllfreeMem > 0 ? '1' : '0');
@@ -39,9 +43,14 @@ static void check_And_noify_each_VM(libxl_dominfo *info,int NRvm)
 		is_memory_sufficient = 1;
 	else 
 		is_memory_sufficient = 0;
-	
+	/*
+ 	 * notify each vm of there are sufficient memory or there is no any suffi-
+ 	 * cient memory via interface xenstore. This interface trigger a event-tri-
+ 	 * gger for memory/warning entry. 
+	 */
+
 	xs = xs_daemon_open();
-		
+	
 	for (j = 1;j < NRvm;j++)
 	{
 		sprintf(Warnpath,"/local/domain/%d/memory/warning",info[j].domid);
@@ -61,11 +70,22 @@ static void getInfoOfVM(char *path,int64_t *ALM,int64_t *AVM,int64_t *CMA)
 	xs_transaction_t trans;
 	struct xs_handle *xs;
 	
-		
+	/*
+ 	 * obtain the path of allocated memory amount, available memory amount and critical memory
+ 	 * amount in xenstore via connecting with variable path and some strings (e.g., %s/target).
+ 	 */  		
 	sprintf(ALMPath,"%s/target",path);	
 	sprintf(AVMPath,"%s/AVM",path);	
 	sprintf(CMAPath,"%s/CMA",path);
+
+
+
+	/*
+ 	 * obtain value of allocated memory amount, available memory amount and critical memory 
+ 	 * amount via the interface xenstore and connected strings or paths
+ 	 */ 
 	xs = xs_daemon_open();
+
 	trans = xs_transaction_start(xs);
 
 	result[0] = (char *) xs_read(xs,trans,ALMPath,NULL);
@@ -73,8 +93,12 @@ static void getInfoOfVM(char *path,int64_t *ALM,int64_t *AVM,int64_t *CMA)
 	result[2] = (char *) xs_read(xs,trans,CMAPath,NULL);
 	
 	xs_transaction_end(xs,trans,false);	
+
 	xs_daemon_close(xs);	
-	
+
+	/*
+ 	 * Transfer the three values (their variable type is char *) into the value in int64_t 
+ 	 */	
 	sscanf(result[0],"%"PRId64,ALM);	
 	sscanf(result[1],"%"PRId64,AVM);	
 	sscanf(result[2],"%"PRId64,CMA);	
@@ -110,10 +134,17 @@ static void init_env()
 /* initialize two queues, called Alloc and Relea resprespectively */
 static void init_LList()
 {
+	
+	/*
+ 	 * Allocate memory to the queue Alloc and initialize that queue
+ 	 */ 
 	Alloc = (entry *) calloc(1,sizeof(entry));
 	Alloc->next = Alloc;
 	Alloc->prev = Alloc;
 	
+	/*
+  	 * Allocate memory to the queue Relea and initialize that queue
+  	 */ 
 	Relea = (entry *) calloc(1,sizeof(entry));
 	Relea->next = Relea;
 	Relea->prev = Relea;
@@ -143,9 +174,18 @@ int main()
 		
 
 	while(1)
-	{	
+	{
+		/*
+ 		 * 
+ 		 */	
 		info = libxl_list_domain(ctx, &nb_domain);
-		check_And_noify_each_VM(info,nb_domain);
+		check_And_notify_each_VM(info,nb_domain);
+		
+		/*
+ 		 * check whether the allocated memory amount of each running vm meets the
+ 		 * condition (CMA > AVM or CMA < AVM). If so, then the vm whcih meets that
+ 		 * is put into the proper queue via calling the function addEntry(). 
+ 		 */ 
 		for (j = 1;j < nb_domain;j++)
 		{
 			
@@ -159,12 +199,21 @@ int main()
 			addEntry(info[j].domid, path, ALM, AVM, CMA);
 		}
 		
-		//listEntry();
+		/*
+ 		 * check whether there is any memory for allocating memory
+ 		 * if so, the hypervisor begins to releases memory of some vms.
+ 		 */
 		if (is_memory_sufficient == '0')
 			release();
-		
+	
+		/*
+ 		 * Allocate memory to some vms, which needs more memory. 
+ 		 */	
 		allocate();
 		
+		/*
+ 		 * set the length of period for adjusting memory.
+ 		 */ 
 		usleep(Period_Length_us);
 		count++;
 		if (count == 245)
