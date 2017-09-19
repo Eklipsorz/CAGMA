@@ -121,6 +121,7 @@ void updateCMA(char *path,int64_t newCMA)
 
 }
 
+/* notify selected vm of that its allocated memory is bigger than maximum amount */
 void notify_vm(char *path)
 {
 	struct xs_handle *xs;
@@ -139,6 +140,7 @@ void notify_vm(char *path)
 
 }
 
+/* allocate more memory to each vm, which meets the condition (CMA > AVM) */
 void allocate(void)
 {
 
@@ -182,6 +184,7 @@ void allocate(void)
 	xs_daemon_close(xs);		
 }
 
+/* try to release more memory if a VM is sequentially released and the times meets threshold_relea */	
 int64_t Tryto_release_more(entry *e)
 {
 	int64_t temp,mean = 0;
@@ -222,7 +225,7 @@ int64_t Tryto_release_more(entry *e)
 	return temp;
 }
 
-
+/* release the memory of the selected vm according to the condition (CMA < AVM) */
 void release(void)
 {
 	
