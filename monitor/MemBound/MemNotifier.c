@@ -76,7 +76,7 @@ void file_close(struct file* file) {
 }
 
 
-	
+/* set a callback function on the time a file is written */	
 int file_write(struct file* file, unsigned long long offset, unsigned char* data, unsigned int size) 
 {
 	mm_segment_t oldfs;
@@ -154,11 +154,14 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 
 	if(count > PROCFS_MAXSIZE)
        		count = PROCFS_MAXSIZE; 
-   	if (copy_from_user(fileNumTemp,buffer,count))    
+	/* receive a string stored in /proc/enabler */
+	if (copy_from_user(fileNumTemp,buffer,count))    
        		return -EFAULT;
-	
+
+	/* transfer string into int */
 	sscanf(fileNumTemp,"%d",&fileNum);
-	
+
+	/* schedule a delayable task */
 	schedule_delayed_work(&_notify_to_procss_work,0);
 
 	return 0;
@@ -167,11 +170,14 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 static int create_enabler(void)
 {
 	static struct proc_dir_entry *p;
+	
+	/* set a callback function on the time the file is written to function _handling_notification_ */
 	static const struct file_operations proc_file_fops = {
 		.owner = THIS_MODULE,
 		.write = _handling_notification_,
 	};
-
+	
+	/* create a node in /proc and set permission */
 	p = proc_create(PROC_ENABLE_RUN, S_IRWXU, NULL, &proc_file_fops);
 
 	if (!p) {
@@ -188,11 +194,13 @@ static int create_enabler(void)
 static int create_buffer(void)
 {
 	static struct proc_dir_entry *p;
+	/* set a callback function on the time the file is written to function buffer_write */
 	static const struct file_operations proc_file_fops = {
 		.owner = THIS_MODULE,
 		.write = buffer_write,
 	};    
- 
+	
+	/* create a node in /proc and set permission */
    	p = proc_create(PROCFS1_NAME, S_IRWXU, NULL, &proc_file_fops);
         
 	if (!p) {
