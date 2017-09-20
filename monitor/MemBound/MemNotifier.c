@@ -27,8 +27,8 @@
 #define MainProg "FixedAccMem"
 
 /* declare the template of task */
-static void _notify_to_procss_(struct work_struct *);
-static DECLARE_DELAYED_WORK(_notify_to_procss_work,_notify_to_procss_);
+static void round_counter_(struct work_struct *);
+static DECLARE_DELAYED_WORK(round_counter_work,round_counter_);
 
 MODULE_DESCRIPTION("Noify meminfo");
 MODULE_AUTHOR("Orion <sslouis25@icloud.com>");
@@ -39,7 +39,6 @@ static char procbuffer[PROCFS_MAXSIZE];
 static bool enable_to_begin = 0;
 static int fileNum;
 static int round = 0;
-//static int count_signal = 0;
 
 
 
@@ -93,12 +92,12 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
 }
 
 /* set a timer to count the times for collecting data */ 
-static void _notify_to_procss_(struct work_struct *ws)
+static void round_counter_(struct work_struct *ws)
 {
 
 	if(enable_to_begin)
 		round++;
-	schedule_delayed_work(&_notify_to_procss_work,collect_period);
+	schedule_delayed_work(&round_counter_work,collect_period);
 	
 }
 
@@ -162,7 +161,7 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 	sscanf(fileNumTemp,"%d",&fileNum);
 
 	/* schedule a delayable task */
-	schedule_delayed_work(&_notify_to_procss_work,0);
+	schedule_delayed_work(&round_counter_work,0);
 
 	return 0;
 }
@@ -233,7 +232,7 @@ static void __exit ProcNoify_exit(void)
 {
 
 	/* remove all dalayable generated from template _notify_to_process_work	in scheduler */
-	cancel_delayed_work(&_notify_to_procss_work);
+	cancel_delayed_work(&round_counter_work);
 	/* remove two entries in /proc, called buffer and enabler */
 	remove_proc_entry(PROCFS1_NAME, NULL);
 	remove_proc_entry(PROC_ENABLE_RUN, NULL);
