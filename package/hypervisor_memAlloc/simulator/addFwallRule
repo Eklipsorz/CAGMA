@@ -1,6 +1,6 @@
 #!/bin/bash
 
-
+# make some ports (2391-2396) be connectable for network
 for i in $(seq 2391 2396)
 do
 	firewall-cmd --zone=public --add-port=$i/tcp --permanent

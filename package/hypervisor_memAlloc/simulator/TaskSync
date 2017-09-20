@@ -1,19 +1,28 @@
 #!/bin/bash
 
 
-for i in $(seq 1 10)
-do	
+# to synchronize Task Generator in each VM for each round
+NRround=10
+for i in $(seq 1 $NRround)
+do
+	# set three listener to wait to receive data for each VM
 	nc -l 2391 && echo "vm1 is ready to run"
 	nc -l 2392 && echo "vm2 is ready to run"
 	nc -l 2393 && echo "vm3 is ready to run"
 
+	# synchronize
 	sleep 5
+
 	echo "ready to sync all vms"
-	ret1=1
-	ret2=1
-	ret3=1
+	
+	# initialize 
+	ret1=1 		#VM1
+	ret2=1 		#VM2
+	ret3=1 		#VM3
 	msg="none"
 
+	# each VM waits for each other until the simulator successfully
+	# receives the data for each VM
 	while [ "$msg" != "hi" ]
    	do
      #		if [ "$ret1" -eq "0" ] && [ "$ret3" -eq "0" ]; then
