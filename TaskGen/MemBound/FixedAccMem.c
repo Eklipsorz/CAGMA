@@ -1,14 +1,12 @@
-#include "Spec.h"
-#include <pthread.h>
-#include <signal.h>
-#include <sys/mman.h>
-#define __USE_GNU 
-#include <sys/resource.h>
+#include "FixedAccMem.h"
 
 #define PAGE_SIZE 4096
 
 static struct timeval runth_s,runth_e;
 
+
+extern void Timediff(struct timeval *src,struct timeval *des,int type);
+extern void Timeadd(struct timeval *src,struct timeval *des);
 
 void sighup()
 {
