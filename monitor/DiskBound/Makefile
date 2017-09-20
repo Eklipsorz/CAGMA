@@ -1,7 +1,7 @@
-obj-m := DiskNotifier.o
+obj-m := DiskDataCollector.o
 version :=$(shell uname -r)
-tempobj=DiskNotifier.ko DiskNotifier.mod.c DiskNotifier.mod.o DiskNotifier.o 
+tempobj=DiskDataCollector.ko DiskDataCollector.mod DiskDataCollector.mod.o DiskDataCollector.o 
 all:
 	rm -rf $(tempobj)
-	make -C /lib/modules/$(version)/build M=$(shell pwd) DiskNotifier.ko
+	make -C /lib/modules/$(version)/build M=$(shell pwd) DiskDataCollector.ko
 
