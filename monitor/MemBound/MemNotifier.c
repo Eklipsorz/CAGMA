@@ -94,9 +94,13 @@ int file_write(struct file* file, unsigned long long offset, unsigned char* data
 /* set a timer to count the times for collecting data */ 
 static void round_counter_(struct work_struct *ws)
 {
-
+	/*
+	 * when the DataCollector is enabled, it begins to count
+	 * the time for each collect_period in millisecond.  
+	 */
 	if(enable_to_begin)
 		round++;
+
 	schedule_delayed_work(&round_counter_work,collect_period);
 	
 }
@@ -107,7 +111,10 @@ static void round_counter_(struct work_struct *ws)
  *                  ProcFS section Beginning 
  *********************************************************/
 
-/* set a callback of /proc/buffer to handle collecting the data from each memory-bound task */
+/* 
+ * set a callback of /proc/buffer to handle collecting the 
+ * data from each memory-bound task 
+ */
 static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,loff_t *data)
 {
  	struct semaphore sem; 
@@ -170,7 +177,10 @@ static int create_enabler(void)
 {
 	static struct proc_dir_entry *p;
 	
-	/* set a callback function on the time the file is written to function _handling_notification_ */
+	/* 
+	 * set a callback function on the time the file is 
+	 * written to function _handling_notification_ 
+	 */
 	static const struct file_operations proc_file_fops = {
 		.owner = THIS_MODULE,
 		.write = _handling_notification_,
@@ -188,12 +198,17 @@ static int create_enabler(void)
 
 }
 
-/* Create entry /proc/buffer in /proc to collect the data from each memory-bound task */
-/* This is a part of Data Collecter */
+/* 
+ * Create entry /proc/buffer in /proc to collect the data 
+ * from each memory-bound task 
+ */
 static int create_buffer(void)
 {
 	static struct proc_dir_entry *p;
-	/* set a callback function on the time the file is written to function buffer_write */
+	/* 
+	 * set a callback function on the time the file is 
+	 * written to function buffer_write 
+	 */
 	static const struct file_operations proc_file_fops = {
 		.owner = THIS_MODULE,
 		.write = buffer_write,
@@ -231,7 +246,10 @@ static int __init ProcNoify_init(void)
 static void __exit ProcNoify_exit(void)
 {
 
-	/* remove all dalayable generated from template _notify_to_process_work	in scheduler */
+	/* 
+	 * remove all dalayable generated from template 
+	 * _notify_to_process_work in scheduler 
+	 */
 	cancel_delayed_work(&round_counter_work);
 	/* remove two entries in /proc, called buffer and enabler */
 	remove_proc_entry(PROCFS1_NAME, NULL);
