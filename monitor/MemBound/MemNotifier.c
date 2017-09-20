@@ -121,35 +121,45 @@ static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,
 	struct file *_file_ = NULL;
 	char filepath[30],context[20];
 
+	/* initialize semaphore and its number */
 	sema_init(&sem,1);
 
-
+	/* set the variable enable_to_begin to limit the activation of DataCollector */
+	/* When the /proc/buffer is accessed, the DataCollector is activated 	     */ 
 	if(!enable_to_begin)
 	{
+		/* initialize the number of round */
 		round = 1;
 		enable_to_begin = 1;
-	}
+	} 
+	else 
+	{
+		if(count > PROCFS_MAXSIZE)
+       			count = PROCFS_MAXSIZE; 
+   		if (copy_from_user(procbuffer,buffer,count))    
+       			return -EFAULT;
+	
+		/* obtain the path of the file, which stores all data from each task */	
+		sprintf(filepath,"/root/result/MEM_RTIME.%d",fileNum);
+		sprintf(context,"%d\t%s\n",round,procbuffer);
 
-	if(count > PROCFS_MAXSIZE)
-       		count = PROCFS_MAXSIZE; 
-   	if (copy_from_user(procbuffer,buffer,count))    
-       		return -EFAULT;
 	
-	
-	sprintf(filepath,"/root/result/MEM_RTIME.%d",fileNum);
-	sprintf(context,"%d\t%s\n",round,procbuffer);
-	_file_ = file_open(filepath, O_RDWR | O_APPEND | O_CREAT, 0644);
-	
-  	
-	down(&sem);
-		file_write(_file_,_file_->f_pos,context,strlen(context)+1);		
-	up(&sem);
+		/* collected data is written into the file _file_ */  	
+		_file_ = file_open(filepath, O_RDWR | O_APPEND | O_CREAT, 0644);
+		/* 
+		 * down() and up() can avoid the resource contention on the time
+		 * a large number of call of file_write() are generated to schedule
+		 */ 
+		down(&sem);
+			file_write(_file_,_file_->f_pos,context,strlen(context)+1);		
+		up(&sem);
 			
-	file_close(_file_);
-		
+		file_close(_file_);
+	}
 		
    	return count;
 }
+
 /* 
  * set a callback function of /proc/enabler. when reading or writing it,
  * the system call this function to activate Data Collector 
@@ -172,7 +182,11 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 
 	return 0;
 }
-/* Create /proc/enabler in /proc to receive a command, which activate Data Collector */
+
+/* 
+ * Create /proc/enabler in /proc to receive a command, 
+ * which activate Data Collector 
+ */
 static int create_enabler(void)
 {
 	static struct proc_dir_entry *p;
