@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# This simulator simulates a Xen environment without CAGMA
 
 # The round of synchronization is 2 x the number of rounds in Task Generator 
 # due to that each round in Task Generator needs two times of synchronization: 1

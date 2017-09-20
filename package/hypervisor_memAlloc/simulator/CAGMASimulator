@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#This simulator simulates a Xen environment with CAGMA
+
 # control the activation of the simulator with CAGMA
 # 0: disable simulator
 # 1: enable simulator
