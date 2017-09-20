@@ -56,7 +56,7 @@ function trapContrC(){
 	
 	rmmod supCenter.ko
 	rmmod resetCMA.ko
-	rmmod MemNotifier.ko
+	rmmod MemDataCollector.ko
 	exit	
 }
 function killWpoint(){
@@ -213,7 +213,7 @@ do
 	fi
 
 	echo $i
-	insmod ./monitor/MemNotifier.ko
+	insmod ./monitor/MemDataCollector.ko
 	begin_to_exper $i
 	
 	NRmainProg=`pgrep FixedAccMem | wc -l`
@@ -226,7 +226,7 @@ do
 	echo "waitfor iops"
 	sleep 10	
 	echo "waitfor iops......done"
-	rmmod MemNotifier.ko
+	rmmod MemDataCollector.ko
 
 	if [ "$enable_test_CAGMA" -eq "1" ]; then
 		

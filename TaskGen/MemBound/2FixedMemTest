@@ -14,7 +14,7 @@ wpoint="FixedAccMem"
 # The actual constrain needs to be smaller than expected constrain.
 # Because the system always doesn't react to changes of memU in time
 nrround=5
-enable_test_CAGMA=0
+enable_test_CAGMA=1
 expTime=720
 nrlevel=5
 export LD_LIBRARY_PATH=/usr/lib
@@ -58,7 +58,7 @@ function trapContrC(){
 	sarpid=$(pidof sar)
 	kill -9 $sarpid
 	
-	rmmod MemNotifier.ko
+	rmmod MemDataCollector.ko
 	rmmod supCenter.ko
 	rmmod resetCMA.ko
 	exit	
@@ -159,10 +159,10 @@ function wait_for_testing_CMA(){
 function begin_to_exper(){
 
 	
-	wait_for_
+	#wait_for_
 
 	initMain
-	expTime=60
+	expTime=30
 	prev=0
 
 	sar -b -t 3 110 >> ./result/MEM_IOPS.$1 & 	
@@ -191,7 +191,7 @@ function begin_to_exper(){
 	done
 }
 
-for i in $(seq 1 20)
+for i in $(seq 1 1)
 do
 	if [ "$enable_test_CAGMA" -eq "1" ]; then
 		insmod ../Tools/resetCMA/resetCMA.ko 
@@ -203,7 +203,7 @@ do
  	
 	
 	echo $i
-	insmod ./monitor/MemNotifier.ko
+	insmod ./monitor/MemDataCollector.ko
 	begin_to_exper $i
 	
 	echo "killing $wpoint process"
@@ -219,7 +219,7 @@ do
 	echo "waitfor iops"
 	sleep 10	
 	echo "waitfor iops......done"
-	rmmod MemNotifier.ko
+	rmmod MemDataCollector.ko
 
 
 
@@ -227,11 +227,11 @@ do
 		rmmod supCenter.ko
 
 		echo "uninstall supCenter.........done"
-		wait_for_testing_CMA	
+#		wait_for_testing_CMA	
 		echo "I'm ready to test next CAGMA"
 		
-	else
-		wait_for_
+#	else
+#		wait_for_
 	fi
 
 done

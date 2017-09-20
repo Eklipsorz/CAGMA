@@ -8,28 +8,14 @@ CONFIGFLAGS=#-ULINSOLVERS_RETAIN_MEMORY
 #ARCHFLAGS=-march=pentium4 # YOU MIGHT WANT TO UNCOMMENT THIS FOR P4
 CFLAGS=$(CONFIGFLAGS) $(ARCHFLAGS) -O3 -funroll-loops -Wall #-g #-ffast-math #-pg
 LAPACKLIBS_PATH=/usr/lib64 # WHEN USING LAPACK, CHANGE THIS TO WHERE YOUR COMPILED LIBS ARE!
-LDFLAGS=-L$(LAPACKLIBS_PATH) -L.
-FIXEDACCMEM=FixedAccMem.c
+FIXEDACCMEM=FixedAccMem.c PFaMstore.c
 GAMEGATERCS=GameGate.c
-allTarget=FixedAccMem GameGate
 
-all: FixedAccMem GameGate
-.PHONY: FixedAccMem GameGate clean
-#GAMEGATE: $(GAMEGATERCS)
-#FixedACMem: $(FIXEDACCMEM)
-FixedAccMem: $(FIXEDACCMEM)
-GameGate: $(GAMEGATERCS)
-$(allTarget):
-	echo $@ $<
-	#test -e /usr/lib/libtolbox.so.0 || make -C toolbox
-	#gcc -lpthread -lm -ltolbox -Wall -O2 -g -o $@ $<
-
-.PHONY: clean
-
-clean:
-	@echo test
-	
-
-#GAMEGATE: $(GAMEGATERCS)
-#	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
-#	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o GameGate $(GAMEGATERCS)
+all: FixedACMem GAMEGATE
+FixedACMem: $(FIXEDACCMEM)
+	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
+	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o FixedAccMem $(FIXEDACCMEM)
+GAMEGATE: $(GAMEGATERCS)
+	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
+	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o GameGate $(GAMEGATERCS)
+		
