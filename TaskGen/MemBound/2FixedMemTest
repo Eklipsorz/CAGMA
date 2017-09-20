@@ -56,8 +56,6 @@ function trapContrC(){
 	done
 
 	sarpid=$(pidof sar)
-	DCollector=$(pidof -x DataCollector)
-	kill -9 $DCollector	
 	kill -9 $sarpid
 	
 	rmmod MemNotifier.ko
@@ -78,8 +76,6 @@ function killMain(){
 
 	killWpoint	
 	sarpid=$(pidof sar)	
-	DCollector=$(pidof -x DataCollector)
-	kill -9 $DCollector	
 	kill -9 $sarpid
 }
 function getNRmainProg(){

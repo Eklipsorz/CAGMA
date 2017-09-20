@@ -44,8 +44,6 @@ function trapContrC(){
 
 	sarpid=$(pidof sar)	
 	kill -9 $sarpid
-	DCollector=$(pidof -x DataCollector)
-	kill -9 $DCollector
 	mempid=$(pidof FixedAccMem)
 	kill -9 $mempid
 
@@ -71,8 +69,6 @@ function killMain(){
 
 	sarpid=$(pidof sar)
 	kill -9 $sarpid
-	DCollector=$(pidof -x DataCollector)
-	kill -9 $DCollector
 }
 function getNRmainProg(){
 	
