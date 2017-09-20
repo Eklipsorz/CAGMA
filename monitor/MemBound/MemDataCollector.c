@@ -185,17 +185,14 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
 }
 
 /* 
- * Create /proc/enabler in /proc to receive a command, 
- * which activate Data Collector 
+ * Create /proc/fsuffexSetter in /proc to define the suffex of the 
+ * file, which stores all data generated from each memory-bound task
  */
 static int create_procfs_fsuffex_setter(void)
 {
 	static struct proc_dir_entry *p;
 	
-	/* 
-	 * set a callback function on the time the file is 
-	 * written to function _handling_notification_ 
-	 */
+	/* set a callback function on the time the file is written */
 	static const struct file_operations proc_file_fops = {
 		.owner = THIS_MODULE,
 		.write = _handling_notification_,
@@ -220,10 +217,8 @@ static int create_procfs_fsuffex_setter(void)
 static int create_procfs_buffer(void)
 {
 	static struct proc_dir_entry *p;
-	/* 
-	 * set a callback function on the time the file is 
-	 * written to function buffer_write 
-	 */
+	
+	/* set a callback function on the time the file is written */
 	static const struct file_operations proc_file_fops = {
 		.owner = THIS_MODULE,
 		.write = buffer_write,
