@@ -36,7 +36,7 @@ if [ "$enable_test_CAGMA" -eq "1" ]; then
 		# activate memAlloc project to periodically allocate and release
 		./memAlloc
 		
-		# set three listener to wait to receive data for each VM
+		# set three listeners to wait to receive data for each VM
 		
 		nc -l 2394 && echo "CMA: vm1 is ready to run"
 		nc -l 2395 && echo "CMA: vm2 is ready to run"

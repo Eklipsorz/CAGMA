@@ -14,7 +14,7 @@ NRround=10
 # to synchronize Task Generator in each VM for each round
 for i in $(seq 1 $NRround)
 do
-	# set three listener to wait to receive data for each VM
+	# set three listeners to wait to receive data for each VM
 	nc -l 2391 && echo "vm1 is ready to run"
 	nc -l 2392 && echo "vm2 is ready to run"
 	nc -l 2393 && echo "vm3 is ready to run"
