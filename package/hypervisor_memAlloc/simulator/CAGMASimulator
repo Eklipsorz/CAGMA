@@ -5,7 +5,14 @@
 # 1: enable simulator
 enable_test_CAGMA=1
 
-# set the maximum number of rounds
+# The round of synchronization is 2 x the number of rounds in Task Generator 
+# due to that each round in Task Generator needs two times of synchronization: 1
+# One is synchronization at the beginning of each round in Task Generator
+# Another one is synchronization at the end of each round in Task Generator
+
+# For example, if the number of rounds in Task Generator is 5, then the round
+# of synchronization is 5x2 or 10
+# set the maximum number of rounds of synchronization
 NRround=10
 # activate task synchronizer to sync each Task Generator in each VM
 ./TaskSync &
