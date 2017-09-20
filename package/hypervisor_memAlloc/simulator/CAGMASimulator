@@ -25,6 +25,8 @@ if [ "$enable_test_CAGMA" -eq "1" ]; then
 		echo "initial memory............done"
 		sleep 1
 		echo "going to run"
+		
+		# activate memAlloc project to periodically allocate and release
 		./memAlloc
 		
 		# set three listener to wait to receive data for each VM
