@@ -246,7 +246,7 @@ static int create_procfs_buffer(void)
 
 
 /* initialize this module */
-static int __init ProcNoify_init(void)
+static int __init MemDataCollector_init(void)
 {
 	
 	/* create two entries in /proc, called buffer and enabler */
@@ -258,7 +258,7 @@ static int __init ProcNoify_init(void)
 
  
 /* this function to be called at module removeal time */ 
-static void __exit ProcNoify_exit(void)
+static void __exit MemDataCollector_exit(void)
 {
 
 	/* 
@@ -273,5 +273,5 @@ static void __exit ProcNoify_exit(void)
 	printk(KERN_INFO "Goodbye\n");
 }
  
-module_init(ProcNoify_init);
-module_exit(ProcNoify_exit);
+module_init(MemDataCollector_init);
+module_exit(MemDataCollector_exit);
