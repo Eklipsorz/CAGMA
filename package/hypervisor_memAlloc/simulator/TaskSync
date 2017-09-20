@@ -25,17 +25,18 @@ do
 	# receives the data for each VM
 	while [ "$msg" != "hi" ]
    	do
-     #		if [ "$ret1" -eq "0" ] && [ "$ret3" -eq "0" ]; then
+		# waits until each VM receive the packet
       		if [ "$ret1" -eq "0" ] && [ "$ret2" -eq "0" ] && [ "$ret3" -eq "0" ]; then
 			msg="hi"
 		fi
 
-		echo $msg | nc 203.64.125.27 2390
-       		ret1=`echo $?`    	
-      		echo $msg | nc 203.64.125.66 2390 
-    		ret2=`echo $?`    
-		echo $msg | nc 203.64.125.28 2390 
-       		ret3=`echo $?`    
+		# each VM also set a listener to sync 
+		echo $msg | nc 203.64.125.27 2390 	# send a packet to VM1
+       		ret1=`echo $?`    			# When VM1 receives the packet, it returns 0	
+       		echo $msg | nc 203.64.125.66 2390 	# send a packet to VM2
+       		ret2=`echo $?`   			# When VM2 receives the packet, it returns 0
+		echo $msg | nc 203.64.125.28 2390 	# send a packet to VM3
+       		ret3=`echo $?`   			# When VM3 receives the packet, it returns 0 
 
 	done
 

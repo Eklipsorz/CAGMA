@@ -4,52 +4,63 @@
 # 0: disable simulator
 # 1: enable simulator
 enable_test_CAGMA=1
-./Beginwaiter &
 
+# set the maximum number of rounds
+NRround=10
+# activate task synchronizer to sync each Task Generator in each VM
+./TaskSync &
+
+# check whether the simulator is activated 
 if [ "$enable_test_CAGMA" -eq "1" ]; then
 
-
-	for i in $(seq 1 10)
+	
+	# to synchronize Task Generator in each VM for each round under CAGMA
+	for i in $(seq 1 NRround)
 	do
+		# initialize the memory settings for each VM 
+		#(e.g., maximum memory amount and allocated memory amount )
 		xl mem-set vm1 512 && xl mem-set vm2 512 && xl mem-set vm3 512
 		xl mem-max vm1 2500 && xl mem-max vm2 2500 && xl mem-max vm3 2500
-	#	xl mem-set vm1 512 && xl mem-set vm3 512
-	#	xl mem-max vm1 2500 && xl mem-max vm3 2500
 
 		echo "initial memory............done"
 		sleep 1
 		echo "going to run"
 		./memAlloc
 		
+		# set three listener to wait to receive data for each VM
+		
 		nc -l 2394 && echo "CMA: vm1 is ready to run"
 		nc -l 2395 && echo "CMA: vm2 is ready to run"
 		nc -l 2396 && echo "CMA: vm3 is ready to run"
 
 	 
+		# synchronize
 		sleep 5
 		echo "CMA: ready to sync all vms"
 
-		ret1=1
-		ret2=1
-		ret3=1	
+		# initialize 
+		ret1=1 		#VM1
+		ret2=1 		#VM2
+		ret3=1		#VM3
 		msg="none"
-
+		
+		# each VM waits for each other until the simulator successfully
+		# receives the data for each VM
 		while [ "$msg" != "hi" ]
 	   	do
+			# waits until each VM receive the packet
        			if [ "$ret1" -eq "0" ] && [ "$ret2" -eq "0" ] && [ "$ret3" -eq "0" ]; then
 				msg="hi"
 			fi
-#       			if [ "$ret1" -eq "0" ] && [ "$ret3" -eq "0" ]; then
-#				msg="hi"
-#			fi
-	#		sleep 1	
-
-			echo $msg | nc 203.64.125.27 2390
-       			ret1=`echo $?`    	
-       			echo $msg | nc 203.64.125.66 2390 
-       			ret2=`echo $?`    
-			echo $msg | nc 203.64.125.28 2390 
-       			ret3=`echo $?`    
+			
+			# each VM also set a listener to sync 
+		
+			echo $msg | nc 203.64.125.27 2390 	# send a packet to VM1
+       			ret1=`echo $?`    			# When VM1 receives the packet, it returns 0	
+       			echo $msg | nc 203.64.125.66 2390 	# send a packet to VM2
+       			ret2=`echo $?`   			# When VM2 receives the packet, it returns 0
+			echo $msg | nc 203.64.125.28 2390 	# send a packet to VM3
+       			ret3=`echo $?`   			# When VM3 receives the packet, it returns 0 
 
 		done
 	
