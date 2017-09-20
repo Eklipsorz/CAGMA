@@ -2,32 +2,10 @@
 
 
 wpoint="FixedAccMem"
-# expected value  ->  actual value
-# 	40 	  -> 	   60
-# 	50 	  -> 	   70
-# 	60 	  ->       80
-# 	70 	  -> 	   90
-# 	80 	  -> 	  100 
-#      100 	  -> 	  120
-#      120     	  ->      140
-#      140        ->      150
-# The actual constrain needs to be smaller than expected constrain.
-# Because the system always doesn't react to changes of memU in time
+
 nrround=5
 enable_test_CAGMA=0
 export LD_LIBRARY_PATH=/usr/lib
-
-#begin=`date +%s`
-#diff=0
-#
-#    Initialization
-#test -e memU && rm -f memU 
-#test -e etime && rm -f etime
-
-#./genPattern 0 80 10 >> memU  		# output memUsage pattern
-#./genPattern 1 0.1 0.05 >> etime 	# output Execution Time pattern
-
-
 
 
 arrvm1[1]=2
@@ -84,35 +62,16 @@ function getNRmainProg(){
 	done 
 }
 
-function obtainCurmemU(){
-
-	curFree=`cat /proc/meminfo | awk '$1=="MemFree:"{print $2}'`
-	curTotal=`cat /proc/meminfo | awk '$1=="MemTotal:"{print $2}'`
-	curSwapFree=`cat /proc/meminfo | awk '$1=="SwapFree:"{print $2}'`
-	curSwapTotal=`cat /proc/meminfo | awk '$1=="SwapTotal:"{print $2}'`
-	curSwapUsage=$(($curSwapTotal-$curSwapFree))
-	curUsage=$(($curTotal-$curFree+$curSwapUsage))
-	curmemU=$(($curUsage*100/$curTotal))
-	memUdiff=$(($memUTarget-$curmemU))
-
-}
 
 function calc() { awk "BEGIN{print $*}"; }     # set float arithmetic function
 echo "begin"
-#
-#
-#: ' 
-#function begin()
-#{
+
 tempsum=0
 count=0
 function initMain(){
 
 	swapoff -a
 	swapon -a
-	#iostat -x 3 240 >> ../output/MEM_RPS.$1 &
-	#vmstat 6 160 >> ../output/MEM_memUsage.$1 &
-	#../Tools/getMEMU_MEM 960 $1 &	
 }
 
 function wait_for_(){	
@@ -165,7 +124,7 @@ function begin_to_exper(){
 	prev=0
 		
 	sar -b -t 3 110  >> ./result/MEM_IOPS.$1 & 
-	./GameGate $1
+	./FileSuffexSetter $1
 	
 	for i in $(seq 1 6)
 	do
@@ -185,19 +144,17 @@ function begin_to_exper(){
 		prev=$temest
 		echo "enter $i/10, ans = $temest"	
 		
-#		result=$((temest-prev))
 		begin=`date +%s`
 		while [ "$diff" -le "$expTime" ]
 		do
-#			NRmainProg=`pgrep FixedAccMem | wc -l`
-#			if [ "$NRmainProg" -lt "$temest" ]; then	
-#				 ./$wpoint  &
-#			fi
+			NRmainProg=`pgrep FixedAccMem | wc -l`
+			if [ "$NRmainProg" -lt "$temest" ]; then	
+				 ./$wpoint  &
+			fi
 
 			end=`date +%s`
 			diff=$((end-begin))
 		done
-#		prev=$temest
 	
 	done
 }
