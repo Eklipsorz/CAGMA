@@ -22,8 +22,8 @@
 #define collect_period 3000
 
 #define PROCFS_MAXSIZE 512
-#define PROC_ENABLE_RUN "enabler"
-#define PROCFS1_NAME "buffer"
+#define PROCFS_FILESUFFEX_SETTER "fsuffexSetter"
+#define PROCFS_BUFFER "buffer"
 #define MainProg "FixedAccMem"
 
 /* declare the template of task */
@@ -166,8 +166,9 @@ static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,
  */
 static ssize_t _handling_notification_(struct file *file, const char *buffer, size_t count,loff_t *data)
 {
-	char fileNumTemp[10];
+	char fileNumTemp[PROCFS_MAXSIZE];
 
+	/* set the maximum number of the words in the fileNumTemp */
 	if(count > PROCFS_MAXSIZE)
        		count = PROCFS_MAXSIZE; 
 	/* receive a string stored in /proc/enabler */
@@ -187,7 +188,7 @@ static ssize_t _handling_notification_(struct file *file, const char *buffer, si
  * Create /proc/enabler in /proc to receive a command, 
  * which activate Data Collector 
  */
-static int create_enabler(void)
+static int create_procfs_fsuffex_setter(void)
 {
 	static struct proc_dir_entry *p;
 	
@@ -201,7 +202,7 @@ static int create_enabler(void)
 	};
 	
 	/* create a node in /proc and set permission */
-	p = proc_create(PROC_ENABLE_RUN, S_IRWXU, NULL, &proc_file_fops);
+	p = proc_create(PROCFS_FILESUFFEX_SETTER, S_IRWXU, NULL, &proc_file_fops);
 
 	if (!p) {
 		printk("%s(#%d): create proc entry failed\n", __func__, __LINE__);        
@@ -216,7 +217,7 @@ static int create_enabler(void)
  * Create entry /proc/buffer in /proc to collect the data 
  * from each memory-bound task 
  */
-static int create_buffer(void)
+static int create_procfs_buffer(void)
 {
 	static struct proc_dir_entry *p;
 	/* 
@@ -229,7 +230,7 @@ static int create_buffer(void)
 	};    
 	
 	/* create a node in /proc and set permission */
-   	p = proc_create(PROCFS1_NAME, S_IRWXU, NULL, &proc_file_fops);
+   	p = proc_create(PROCFS_BUFFER, S_IRWXU, NULL, &proc_file_fops);
         
 	if (!p) {
 		printk("%s(#%d): create proc entry failed\n", __func__, __LINE__);		
@@ -249,8 +250,8 @@ static int __init ProcNoify_init(void)
 {
 	
 	/* create two entries in /proc, called buffer and enabler */
-	create_buffer();
-	create_enabler();
+	create_procfs_buffer();
+	create_procfs_fsuffex_setter();
 	
 	return 0;
 }
@@ -266,8 +267,8 @@ static void __exit ProcNoify_exit(void)
 	 */
 	cancel_delayed_work(&round_counter_work);
 	/* remove two entries in /proc, called buffer and enabler */
-	remove_proc_entry(PROCFS1_NAME, NULL);
-	remove_proc_entry(PROC_ENABLE_RUN, NULL);
+	remove_proc_entry(PROCFS_BUFFER, NULL);
+	remove_proc_entry(PROCFS_FILESUFFEX_SETTER, NULL);
 
 	printk(KERN_INFO "Goodbye\n");
 }
