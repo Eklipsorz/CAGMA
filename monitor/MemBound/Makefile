@@ -1,7 +1,7 @@
-obj-m := MemNotifier.o
+obj-m := MemDataCollector.o
 version :=$(shell uname -r)
-tempobj=MemNotifier.ko MemNotifier.mod.c MemNotifier.mod.o MemNotifier.o 
+tempobj=MemDataCollector.ko MemDataCollector.mod.c MemDataCollector.mod.o MemDataCollector.o 
 all:
 	rm -rf $(tempobj)
-	make -C /lib/modules/$(version)/build M=$(shell pwd) MemNotifier.ko
+	make -C /lib/modules/$(version)/build M=$(shell pwd) MemDataCollector.ko
 
