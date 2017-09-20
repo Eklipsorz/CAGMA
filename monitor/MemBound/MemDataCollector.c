@@ -30,10 +30,6 @@
 static void round_counter_(struct work_struct *);
 static DECLARE_DELAYED_WORK(round_counter_work,round_counter_);
 
-MODULE_DESCRIPTION("Noify meminfo");
-MODULE_AUTHOR("Orion <sslouis25@icloud.com>");
-MODULE_LICENSE("GPL");
-
 static char procbuffer[PROCFS_MAXSIZE];
 
 static bool enable_to_begin = 0;
@@ -41,8 +37,7 @@ static int fileNum;
 static int round = 0;
 
 
-
-MODULE_DESCRIPTION("Noify meminfo");
+MODULE_DESCRIPTION("This a part of Data Collector");
 MODULE_AUTHOR("Orion <sslouis25@icloud.com>");
 MODULE_LICENSE("GPL");
 
@@ -134,9 +129,12 @@ static ssize_t buffer_write(struct file *file, const char *buffer, size_t count,
 	} 
 	else 
 	{
+		/* set the maximum number of words copied from /proc/buffer */
 		if(count > PROCFS_MAXSIZE)
        			count = PROCFS_MAXSIZE; 
-   		if (copy_from_user(procbuffer,buffer,count))    
+   	
+		/* copy data from /proc/buffer to the buffer procbuffer */
+		if (copy_from_user(procbuffer,buffer,count))    
        			return -EFAULT;
 	
 		/* obtain the path of the file, which stores all data from each task */	
