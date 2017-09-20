@@ -147,11 +147,6 @@ function begin_to_exper(){
 		begin=`date +%s`
 		while [ "$diff" -le "$expTime" ]
 		do
-			NRmainProg=`pgrep FixedAccMem | wc -l`
-			if [ "$NRmainProg" -lt "$temest" ]; then	
-				 ./$wpoint  &
-			fi
-
 			end=`date +%s`
 			diff=$((end-begin))
 		done
