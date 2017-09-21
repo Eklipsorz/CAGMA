@@ -16,9 +16,7 @@
 /* set the number of iterations for each task */
 #define execIter 3
 
-/* set a boolean to control the execution for each task */
-int ready_to_exit = 0;
-
+int fd;
 static struct timeval runth_s,runth_e;
 
 /* import Timediff() and Timeadd() from other file */
@@ -29,7 +27,8 @@ extern void Timeadd(struct timeval *src,struct timeval *des);
 /* when a signal is sent to here, the task is allowed to exit the loop */
 void sighup()
 {
-	ready_to_exit = 1;
+	close(fd);
+	exit(0);
 }
 
 /* set a callback function of a timer */ 
@@ -119,7 +118,7 @@ void seqAccess(int fd,char *readtemp, char *writemp)
 /* The main function of this program */
 int main()
 {
-	int i,fd;
+	int i;
 	struct itimerval timer;
 	double rtime = rtime;
 	char *buff_read, *buff_write;
@@ -190,7 +189,6 @@ int main()
 
 	}	
 	
-	close(fd);	
 	
 	return 0;
 }

@@ -9,8 +9,6 @@
 
 #define PAGE_SIZE 4096
 
-/* set a boolean to control the execution for each task */
-int ready_to_exit = 0;
 
 char *heapMem = NULL;
 
@@ -108,7 +106,7 @@ int main(int argc, char *argv[])
 
 	/* set a infinite loop to prevent decrease of the number of tasks at same time */
 	/* if the boolean ready_to_exit is 0, the task jump out from this loop */
-	while(!ready_to_exit)
+	while(1)
 	{
 		/* record the beginning time of each task */	
 		gettimeofday(&runth_s,NULL);
