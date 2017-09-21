@@ -61,7 +61,7 @@ static void timer_handler()
 	close(resultfd);
 }
 
-
+/* randomly access */
 void randAccess(int fd,char *readtemp, char *writemp)
 {
 	//
@@ -72,9 +72,15 @@ void randAccess(int fd,char *readtemp, char *writemp)
 	srand(time(NULL));
 	for(j = 0; j < execIter; j++)
 	{
-		
+	
+		/* random position of section */	
 		SectNo = rand()%512;
 		
+		/*
+		 * determine whether the system reads disk or writes disk according to value of j
+		 * if j is even, then it reads the disk
+		 * if j is odd, then it writes the disk
+		 */
 		if(j%2)
 		{
 			if ( (rc = read(fd,readtemp,sectorSize) == -1 ))
@@ -90,7 +96,7 @@ void randAccess(int fd,char *readtemp, char *writemp)
 
 }
 
-//void seqAccess(FILE *fp,char *readtemp, char *writemp)
+/* sequentially access */
 void seqAccess(int fd,char *readtemp, char *writemp)
 {
 	int j,rc;	
@@ -99,7 +105,15 @@ void seqAccess(int fd,char *readtemp, char *writemp)
 	 */
 	for(j = 0; j < execIter; j++)
 	{
+		/*  the sequential position of section */
 		lseek(fd,j*sectorSize,SEEK_SET);
+		
+		/*
+		 * determine whether the system reads disk or writes disk according to value of j
+		 * if j is even, then it reads the disk
+		 * if j is odd, then it writes the disk
+		 */
+		
 		if(j%2)
 		{
 			if ( (rc = read(fd,readtemp,sectorSize) == -1 ))
@@ -170,8 +184,7 @@ int main()
 	}
 	
 	/* set a infinite loop to prevent decrease of the number of tasks at same time */
-	/* if the boolean ready_to_exit is 0, the task jump out from this loop */
-	while(!ready_to_exit)
+	while(1)
 	{	
 		/* record the beginning time of each task */
 		gettimeofday(&runth_s,NULL);
