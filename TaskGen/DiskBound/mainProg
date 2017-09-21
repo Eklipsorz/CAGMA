@@ -1,7 +1,0 @@
-#!/bin/bash
-
-rm -rf ../output/IO_*
-insmod ./monitor/DiskNotifier.ko
-sleep 1
-./3FixedDiskTest
-rmmod ProcNoify.ko
