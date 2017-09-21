@@ -10,15 +10,15 @@ CFLAGS=$(CONFIGFLAGS) $(ARCHFLAGS) -O3 -funroll-loops -Wall #-g #-ffast-math #-p
 LAPACKLIBS_PATH=/usr/lib64 # WHEN USING LAPACK, CHANGE THIS TO WHERE YOUR COMPILED LIBS ARE!
 LDFLAGS=-L$(LAPACKLIBS_PATH) -L.
 ACCDISKRCS=FixedAccDisk.c
-GAMEGATERCS=GameGate.c
+FileSuffexSetterRCS=FileSuffexSetter.c
 
 
-all: ACCDISK GAMEGATE
+all: ACCDISK FILESUFFEXSETTER
 
 ACCDISK: $(ACCDISKRCS)
 	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
 	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o FixedAccDisk $(ACCDISKRCS)
-GAMEGATE: $(GAMEGATERCS)
+FILESUFFEXSETTER: $(FileSuffexSetterRCS)
 	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
-	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o GameGate $(GAMEGATERCS)
+	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o FileSuffexSetter $(FileSuffexSetterRCS)
 
