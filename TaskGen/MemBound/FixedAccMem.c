@@ -1,44 +1,32 @@
+/* 
+ * This program can simulate that multiple memory-bound task runs at the same time.
+ * Under the simulation, Each task writes its the residence time into /proc/buffer 
+ * for each 3 seconds. When /proc/buffer is written, the guest OS indirectly writes
+ * the file storing data of each memory-bound task. 
+ */
+
 #include "FixedAccMem.h"
 
 #define PAGE_SIZE 4096
 
 static struct timeval runth_s,runth_e;
 
-
+/* import Timediff() and Timeadd() from other file */
 extern void Timediff(struct timeval *src,struct timeval *des,int type);
 extern void Timeadd(struct timeval *src,struct timeval *des);
 
-void sighup()
-{
-	int configfd;
-	double rtime;
-	char output[30];
-   
-	configfd = open("/proc/buffer", O_RDWR);    
-   
-	if(configfd < 0) {
-		perror("open");
-		return;
-	}
-   
-	gettimeofday(&runth_e,NULL);
-	Timediff(&runth_s,&runth_e,2);
-	rtime=(double)runth_e.tv_sec+(double)runth_e.tv_usec/1000000;
-   
-	if (rtime > 720)
-		return;
- 
-	sprintf(output,"%d",(int)(rtime*1000));    
-	write(configfd, output, strlen(output) + 1);
-	close(configfd);
-}
-
+/* set a callback function of a timer */ 
+/* 
+ * When this function is called, it calculates its residence time and 
+ * writes the residence time into /proc/buffer
+ */
 static void timer_handler()
 {
 	int resultfd;
 	double rtime;
 	char output[30];
-	
+	printf("jhihii\n");
+	/* require for accessing /proc/buffer */
 	resultfd = open("/proc/buffer", O_RDWR);    
 	
 	if(resultfd < 0) {
@@ -47,19 +35,28 @@ static void timer_handler()
 	}
 	
 
-
+	/* record the end time of each task */
 	gettimeofday(&runth_e,NULL);
+	
+	/* calculate the residence time of each memory-bound task */
+	/* 
+	 * The residence time is the difference between the beginning time 
+	 * and the end time 
+	 */
 	Timediff(&runth_s,&runth_e,2);
 	rtime=(double)runth_e.tv_sec+(double)runth_e.tv_usec/1000000;
 	
 	if (rtime > 720)
 		return;
+
+	/* write the residence time into /proc/buffer */
 	sprintf(output,"%d",(int)(rtime*1000));
 	write(resultfd, output, strlen(output) + 1);
 	close(resultfd);
 
 }
 
+/* The main function of this program */
 int main(int argc, char *argv[])
 {
 	
@@ -70,8 +67,8 @@ int main(int argc, char *argv[])
 	char *heapMem = NULL;
 	char input = 'a';
 
-	mUsage = 49152;	
-	
+
+	/* set a callback function of a timer */
 	memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = &timer_handler;
 	sigaction(SIGALRM,&sa,NULL);
@@ -81,17 +78,24 @@ int main(int argc, char *argv[])
 
 	timer.it_interval.tv_sec = 3;
 	timer.it_interval.tv_usec = 0;
-//	signal(SIGHUP,sighup);	
+	
+	/* set a timer to periodically collect the data */
 	setitimer(ITIMER_REAL,&timer,NULL);
 	
+	/* set the memory usage for each memor-bound task */
+	mUsage = 49152; 	/* This value is in kb unit */	
+	
+	/* The memory usage is fixed to mUsage via pre-allocating memory */
 	heapMem = (char*)malloc(mUsage*1024*sizeof(char));	
 
+	/* Initialize the pre-allocated memory */
 	for (iter = 0; iter < mUsage/4;iter++)
 		heapMem[iter*4096] = 10;
-	
+
+	/* set a infinite loop to prevent decrease of the number of tasks at same time */
 	while(1)
 	{
-		
+		/* record the beginning time of each task */	
 		gettimeofday(&runth_s,NULL);
 		for(iter = 0;iter < iterInTask; iter++)
 		{
@@ -113,7 +117,7 @@ int main(int argc, char *argv[])
 		Timediff(&runth_s,&runth_e,2);
 	
 	}
-	
+
 	free(heapMem);
 		
 	return EXIT_SUCCESS;
