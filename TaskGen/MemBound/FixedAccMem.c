@@ -46,8 +46,6 @@ static void timer_handler()
 	Timediff(&runth_s,&runth_e,2);
 	rtime=(double)runth_e.tv_sec+(double)runth_e.tv_usec/1000000;
 	
-	if (rtime > 720)
-		return;
 
 	/* write the residence time into /proc/buffer */
 	sprintf(output,"%d",(int)(rtime*1000));
@@ -73,9 +71,11 @@ int main(int argc, char *argv[])
 	sa.sa_handler = &timer_handler;
 	sigaction(SIGALRM,&sa,NULL);
 	
+	/* This is the period between now and the first timer interrupt. If zero, the alarm is disabled. */
 	timer.it_value.tv_sec = 3;
 	timer.it_value.tv_usec = 0;
 
+	/* This is the period between successive timer interrupts. If zero, the alarm will only be sent once. */
 	timer.it_interval.tv_sec = 3;
 	timer.it_interval.tv_usec = 0;
 	
