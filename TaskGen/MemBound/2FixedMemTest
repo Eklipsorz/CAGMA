@@ -3,13 +3,13 @@
 
 wpoint="FixedAccMem"
 
-nrround=5
 enable_test_CAGMA=1
-expTime=720
-nrlevel=5
+
 export LD_LIBRARY_PATH=/usr/lib
 
 
+# set the total memory usage for each round 
+# the number of rounds is detemined by the length of array arrvm2
 arrvm2[1]=2
 arrvm2[2]=2
 arrvm2[3]=2
@@ -21,9 +21,11 @@ arrvm2[8]=9
 arrvm2[9]=9
 ############Additional
 arrvm2[10]=9
-iter=0
 
 echo 3 > /proc/sys/vm/drop_caches
+
+# set a callback function of trap. 
+# This function w
 trap trapContrC INT
 function trapContrC(){
 	
