@@ -205,7 +205,12 @@ do
 		killWpoint
 		NRmainProg=`pgrep FixedAccMem | wc -l`
 	done
-	echo "ans: $NRmainProg"
+
+	# kill the tool for collecting IOPS
+	sarpid=$(pidof sar)
+	kill -9 $sarpid
+	
+	echo "killing is done"
 	# sync
 	echo "waitfor iops"
 	sleep 10	

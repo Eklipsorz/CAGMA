@@ -48,15 +48,17 @@ function trapContrC(){
 	exit	
 }
 
+# kill all main programs
 function killWpoint(){
 
 	for id in $(pidof $wpoint)
 	do
-		kill -9 $id
+		kill -1 $id
 	done
 
 }
 
+# kill all main programs and the tools for collecting IOPS of each task 
 function killMain(){
 	
 
@@ -65,44 +67,36 @@ function killMain(){
 	sarpid=$(pidof sar)
 	kill -9 $sarpid
 }
-function getNRmainProg(){
-	
-	NRmainProg=0
-	
-	for i in $(pidof FixedAccMem)
-	do
-		NRmainProg=$((NRmainProg+1))	
-	done 
-}
 
-
-echo "begin"
-
-
+# initialize swapping device on disk 
 function initMain(){
 	
 	swapoff -a
 	swapon -a
 }
 
-function wait_for_(){	
+# sync task generator in each VM under an environment without CAGMA
+function sync_each_Task_Generator(){
 
 	ret=1
 	echo "I send a packet to controller"
 	while [ "$ret" == "1" ]
-	do
+	do 
+		# send a packet to port 2393 in hypervisor
 		echo hi | nc 203.64.125.101 2393
 		ret=`echo $?`	
 	done
 	
 	while [ "$ret" != "hi" ]
 	do	
+		# set a listener to receive the data from hypervisor
 		ret=$(nc -l 2390)
 	done
 	echo "VM3: i received a packet, ans=$ret" 
 }
 
-function wait_for_testing_CMA(){	
+# sync task generator in each VM under an environment with CAGMA
+function sync_each_Task_Generator_onCAGMA(){
 
 	ret=1
 	echo "I send a packet to controller"
@@ -118,45 +112,62 @@ function wait_for_testing_CMA(){
 	done
 	echo "VM3: i received a packet for CMA, ans: $ret"
 }
+
+# pre-execute some disk-bound tasks and a memory-bound task
 function warmup(){
 	
+	# pre-execute some disk-bound tasks	
 	for i in $(seq 1 $nrtask)
 	do
 		./$wpoint &
 	done
+	
+	# pre-execute a memory-bound task
 	./FixedAccMem &
-	wait_for_
+
+	sync_each_Task_Generator
 }
 
-function begin_to_exper(){
+# run multiple programs according to the settings of task
+function run_experiment(){
 
-
+	# pre-execute some disk-bound tasks and a memory-bound task
 	warmup	
-	
+
+	# initialize
 	initMain
-	
 	expTime=60
+
+	# set the length of period of the tools for collecting IOPS
 	sar -b -t 3 110 >> ./result/DISK_IOPS.$1 & 
-	./GameGate $1
+	# set the suffex of the file storing all data
+	./FileSuffexSetter $1
 	
+	# simulate different memory usages 
 	for i in $(seq 1 6)
 	do
 		echo "enter $i/6, ans = $nrtask"
-
+		# record the beginning time
 		begin=`date +%s`
 		diff=0
-		
+
+		# waits for expTime seconds 
 		while [ "$diff" -le "$expTime" ]
 		do
+			# record the end time
 			end=`date +%s`
+			# calculate current difference between the begining time and the end time
 			diff=$((end-begin))
 		done
 	done
 }
 
-
-for i in $(seq 1 20)
+# set the action for each round
+# In each round, the system begins to initalize some modules and runs experiment.
+for i in $(seq 1 5)
 do
+	# check whether enable_test_CAGMA is enabled
+	# if so, it begins to simulate an environment with CAGMA
 	if [ "$enable_test_CAGMA" -eq "1" ]; then
 		insmod ../Tools/resetCMA/resetCMA.ko 
 		rmmod resetCMA.ko
@@ -165,12 +176,14 @@ do
 		echo "install supCenter.........done"
 	fi
 	
-	sleep 1
 	echo "$i"
+	
+	# insert a module, which collects the residence time, into guest OS
 	insmod ./monitor/DiskNotifier.ko
-	begin_to_exper $i
-
-
+	# begins to simulate an environment on which multiple programs runs 
+	run_experiment $i
+	
+	# initialize the number of the main programs at the end of each round
 	NRmainProg=`pgrep accDisk | wc -l`
 	while [ "$NRmainProg" -gt "0" ]; 	
 	do
@@ -178,30 +191,34 @@ do
 		NRmainProg=`pgrep accDisk | wc -l`
 	done
 	
+	# kill the tool for collecting IOPS
 	sarpid=$(pidof sar)
 	kill -9 $sarpid
+	
+	# kill the FixedAccMem
 	mempid=$(pidof FixedAccMem)
 	kill -9 $mempid
-
+	
+	# sync
 	echo "waitfor iops"
 	sleep 10	
 	echo "waitfor iops......done"
 	
+	# remove module
 	rmmod DiskNotifier.ko
 	
-		
-#
+	
+	# sync other task generator 
 	if [ "$enable_test_CAGMA" -eq "1" ]; then
 		
 		rmmod supCenter.ko
+		
 		echo "uninstall supCenter.........done"
-	
-		wait_for_testing_CMA
+		sync_each_Task_Generator_onCAGMA
 		echo "I'm ready to test next CAGMA"
 	else
-		wait_for_
+		sync_each_Task_Generator	
 	fi
-#
 done
 
 killMain
