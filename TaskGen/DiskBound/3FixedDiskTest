@@ -102,12 +102,14 @@ function sync_each_Task_Generator_onCAGMA(){
 	echo "I send a packet to controller"
 	while [ "$ret" == "1" ]
 	do
+		# send a packet to port 2396 in hypervisor
 		echo hi | nc 203.64.125.101 2396
 		ret=`echo $?`	
 	done
 	
 	while [ "$ret" != "hi" ]
 	do	
+		# set a listener to receive the data from hypervisor
 		ret=$(nc -l 2390)
 	done
 	echo "VM3: i received a packet for CMA, ans: $ret"
