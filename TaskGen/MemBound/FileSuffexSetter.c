@@ -1,6 +1,7 @@
 #include "FixedAccMem.h"
 
-/* This program helps user modify the suffex of a file storing each data from
+/* 
+ * This program helps user modify the suffex of a file storing each data from
  * each memory-bound task. You first run this program with a parameter which 
  * can be the suffex of the file 
  */
