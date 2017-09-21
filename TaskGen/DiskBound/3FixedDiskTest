@@ -1,29 +1,47 @@
 #!/bin/bash 
+# This program can simulate that multiple disk-bound tasks and a memory-bound task 
+# running on this platform via running two types of programs, called FixedAccDisk
+# and FixedAccMem. Their execution time and memory usage are controlled and the 
+# program change. The total memory usage of each round for obtaining results on 
+# different memory usages
 
+echo "Simulation: initialize library and some variables"
 
-memUTarget=125
+# set main program, which is used to simulate different memory usages 
 wpoint="FixedAccDisk"
 
+# enable or disable CAGMA run in Xen environment 
 enable_test_CAGMA=0
 export LD_LIBRARY_PATH=/usr/lib
 
+# set the number of tasks running at the same time 
+nrtask=15
 
+# clear dirty pages for adding usable memory space
 echo 3 > /proc/sys/vm/drop_caches
 
+# set a callback function of a trap, which is only triggered by CTRL-C
+# when a user press CTRL-C , then the system automatically stops the execution
+# of each main program, stops the execution of the tools for collecting IOPS
+# and remove necessary modules from the guest OS
 trap trapContrC INT
 function trapContrC(){
 	
-
+	# stop the execution of each main programs
 	for id in $(pidof $wpoint)
 	do
 		kill -9 $id
 	done
 
+	# stop the execution of the tools for collecting IOPS 
 	sarpid=$(pidof sar)	
 	kill -9 $sarpid
+
+	# stop the execution of a memory-boudn task 
 	mempid=$(pidof FixedAccMem)
 	kill -9 $mempid
 
+	# remove some modules
 	rmmod supCenter.ko
 	rmmod resetCMA.ko
 	rmmod DiskNotifier.ko
@@ -60,7 +78,6 @@ function getNRmainProg(){
 
 echo "begin"
 
-nrtask=15
 
 function initMain(){
 	
