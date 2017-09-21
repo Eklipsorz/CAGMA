@@ -1,8 +1,0 @@
-#!/bin/bash 
-#8000 20000
-# 0  0.5
-delay=0.75
-#dd if=/dev/zero of=random bs=4k count=12500 2>>../output/IO_RTIME.$1 && rm -rf random; sleep $delay; ./ddworker $1
-#dd if=/dev/zero of=random bs=4k count=10 oflag=direct && rm -rf random; sleep $delay; ./ddworker $1
-./accDisk ; sleep $delay; ./ddworker 
-#dd if=/dev/zero of=random bs=4k count=256000 && rm -rf random;  ./test.sh

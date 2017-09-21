@@ -21,7 +21,6 @@
 #include <errno.h>
 #include <mqueue.h>
  
-#include "common.h"
 // choose whether seqAccess or randAccess?
 #define SEQACCESS  
 //#define RANDACCESS
