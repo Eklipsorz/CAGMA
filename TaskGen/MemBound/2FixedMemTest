@@ -1,8 +1,16 @@
 #!/bin/bash 
 
+# This program can simulate that multiple memory-bound tasks at the same time 
+# via running program, called FixedAccMem. Their execution time and memory 
+# usage are controlled and the program change. The total memory usage of each 
+# round for obtaining results on different memory usages
 
+# set main program, which is used to simulate different memory usages 
 wpoint="FixedAccMem"
 
+echo "Simulation: initialize library and some variables"
+
+# enable or disable CAGMA run in Xen environment 
 enable_test_CAGMA=1
 
 export LD_LIBRARY_PATH=/usr/lib
@@ -10,6 +18,7 @@ export LD_LIBRARY_PATH=/usr/lib
 
 # set the total memory usage for each round 
 # the number of rounds is detemined by the length of array arrvm2
+# array[round]=the_number_of_tasks_at_the_same_time
 arrvm2[1]=2
 arrvm2[2]=2
 arrvm2[3]=2
@@ -22,27 +31,35 @@ arrvm2[9]=9
 ############Additional
 arrvm2[10]=9
 
+# clear dirty pages for adding usable memory space
 echo 3 > /proc/sys/vm/drop_caches
 
-# set a callback function of trap. 
-# This function w
+
+# set a callback function of a trap, which is only triggered by CTRL-C
+# when a user press CTRL-C , then the system automatically stops the execution
+# of each main program, stops the execution of the tools for collecting IOPS
+# and remove necessary modules from the guest OS
 trap trapContrC INT
 function trapContrC(){
 	
-
+	# stop the execution of each main programs
 	for id in $(pidof $wpoint)
 	do
 		kill -9 $id
 	done
 
+	# stop the execution of the tools for collecting IOPS 
 	sarpid=$(pidof sar)
 	kill -9 $sarpid
-	
+
+	# remove some modules 
 	rmmod MemDataCollector.ko
 	rmmod supCenter.ko
 	rmmod resetCMA.ko
 	exit	
 }
+
+# kill all main programs
 function killWpoint(){
 	
 	for id in $(pidof $wpoint)
@@ -51,6 +68,8 @@ function killWpoint(){
 	done
 
 }
+
+# kill all main programs and the tools for collecting IOPS of each task 
 function killMain(){
 	
 
@@ -58,57 +77,50 @@ function killMain(){
 	sarpid=$(pidof sar)	
 	kill -9 $sarpid
 }
-function getNRmainProg(){
-	
-	NRmainProg=0
-	
-	for i in $(pidof FixedAccMem)
-	do
-		NRmainProg=$((NRmainProg+1))	
-	done 
-}
 
 
-function calc() { awk "BEGIN{print $*}"; }     # set float arithmetic function
-echo "begin"
-
-tempsum=0
-count=0
+# initialize swapping device on disk 
 function initMain(){
 
 	swapoff -a
 	swapon -a
 }
 
-function wait_for_(){	
+# sync task generator in each VM under an environment without CAGMA
+function sync_each_Task_Generator(){	
 
 	ret=1
 	echo "I send a packet to controller"
 	while [ "$ret" == "1" ]
 	do
+		# send a packet to port 2392 in hypervisor
 		echo hi | nc 203.64.125.101 2392
 		ret=`echo $?`	
 	done
 	
 	while [ "$ret" != "hi" ]
-	do	
+	do 
+		# set a listener to receive the data from hypervisor
 		ret=$(nc -l 2390)
 	done
 	echo "VM2: i received a packet, ans=$ret"
 }
 
-function wait_for_testing_CMA(){	
+# sync task generator in each VM under an environment with CAGMA
+function sync_each_Task_Generator_onCAGMA(){	
 
 	ret=1
 	echo "I send a packet to controller"
 	while [ "$ret" == "1" ]
 	do
+		# send a packet to port 2395 in hypervisor
 		echo hi | nc 203.64.125.101 2395
 		ret=`echo $?`	
 	done
 	
 	while [ "$ret" != "hi" ]
-	do	
+	do 
+		# set a listener to receive the data from hypervisor
 		ret=$(nc -l 2390)
 	done
 	echo "VM2: i received a packet for CMA, ans=$ret"
@@ -119,7 +131,7 @@ function wait_for_testing_CMA(){
 function begin_to_exper(){
 
 	
-	wait_for_
+	sync_each_Task_Generator
 
 	initMain
 	expTime=30
@@ -151,8 +163,12 @@ function begin_to_exper(){
 	done
 }
 
+
 for i in $(seq 1 5)
 do
+
+	# check whether enable_test_CAGMA is enabled
+	# if so, it begins to simulate an environment with CAGMA
 	if [ "$enable_test_CAGMA" -eq "1" ]; then
 		insmod ../Tools/resetCMA/resetCMA.ko 
 		rmmod resetCMA.ko
@@ -163,9 +179,11 @@ do
  	
 	
 	echo $i
+	# insert a module, which collects the residence time, into guest OS
 	insmod ./monitor/MemDataCollector.ko
 	begin_to_exper $i
-	
+
+	# initialize the number of the main programs at the end of each round
 	echo "killing $wpoint process"
 	NRmainProg=`pgrep FixedAccMem | wc -l`
 	while [ "$NRmainProg" -gt "0" ];
@@ -175,23 +193,25 @@ do
 	done
 	echo "killing is done"
 
-	
+	# sync	
 	echo "waitfor iops"
 	sleep 10	
 	echo "waitfor iops......done"
+	
+	# remove module
 	rmmod MemDataCollector.ko
 
 
-
+	# sync other task generator 
 	if [ "$enable_test_CAGMA" -eq "1" ]; then
 		rmmod supCenter.ko
 
 		echo "uninstall supCenter.........done"
-		wait_for_testing_CMA	
+		sync_each_Task_Generator_onCAGMA
 		echo "I'm ready to test next CAGMA"
 		
 	else
-		wait_for_
+		sync_each_Task_Generator
 	fi
 
 done

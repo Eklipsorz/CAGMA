@@ -1,8 +1,8 @@
 /* 
- * This program can simulate that multiple memory-bound task runs at the same time.
- * Under the simulation, Each task writes its the residence time into /proc/buffer 
- * for each 3 seconds. When /proc/buffer is written, the guest OS indirectly writes
- * the file storing data of each memory-bound task. 
+ * This program can simulate the execution of a memory-bound task. Under the simulation, 
+ * Each task writes its the residence time into /proc/buffer for each 3 seconds. 
+ * When /proc/buffer is written, the guest OS indirectly writes the file storing data 
+ * of each memory-bound task. 
  */
 
 #include "FixedAccMem.h"
