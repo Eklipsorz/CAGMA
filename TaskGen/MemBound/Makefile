@@ -11,11 +11,11 @@ LAPACKLIBS_PATH=/usr/lib64 # WHEN USING LAPACK, CHANGE THIS TO WHERE YOUR COMPIL
 FIXEDACCMEM=FixedAccMem.c
 FileSuffexSetterRCS=FileSuffexSetter.c
 
-all: FixedACMem GAMEGATE
+all: FixedACMem FILESUFFEXSETTER
 FixedACMem: $(FIXEDACCMEM)
 	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
 	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o FixedAccMem $(FIXEDACCMEM)
-GAMEGATE: $(FileSuffexSetterRCS)
+FILESUFFEXSETTER: $(FileSuffexSetterRCS)
 	test -e /usr/lib/libtolbox.so.0 || make -C toolbox
 	gcc -lpthread -lm -ltolbox -Wall -O2 -g -o FileSuffexSetter $(FileSuffexSetterRCS)
 		
