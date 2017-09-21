@@ -12,6 +12,8 @@
 /* set a boolean to control the execution for each task */
 int ready_to_exit = 0;
 
+char *heapMem = NULL;
+
 static struct timeval runth_s,runth_e;
 
 /* import Timediff() and Timeadd() from other file */
@@ -22,7 +24,8 @@ extern void Timeadd(struct timeval *src,struct timeval *des);
 /* when a signal is sent to here, the task is allowed to exit the loop */
 void sighup()
 {
-	ready_to_exit = 1;	
+	free(heapMem);
+	exit(0);
 }
 
 /* set a callback function of a timer */ 
@@ -35,7 +38,6 @@ static void timer_handler()
 	int resultfd;
 	double rtime;
 	char output[30];
-	printf("jhihii\n");
 	/* require for accessing /proc/buffer */
 	resultfd = open("/proc/buffer", O_RDWR);    
 	
@@ -72,7 +74,6 @@ int main(int argc, char *argv[])
 	struct itimerval timer;
 	struct sigaction sa;
 	double rtime = rtime;
-	char *heapMem = NULL;
 	char input = 'a';
 
 
@@ -133,9 +134,7 @@ int main(int argc, char *argv[])
 		Timediff(&runth_s,&runth_e,2);
 	
 	}
-
-	free(heapMem);
-		
+	
 	return EXIT_SUCCESS;
 
 }

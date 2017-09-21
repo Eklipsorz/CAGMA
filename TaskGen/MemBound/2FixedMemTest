@@ -11,7 +11,7 @@ wpoint="FixedAccMem"
 echo "Simulation: initialize library and some variables"
 
 # enable or disable CAGMA run in Xen environment 
-enable_test_CAGMA=1
+enable_test_CAGMA=0
 
 export LD_LIBRARY_PATH=/usr/lib
 
@@ -64,7 +64,7 @@ function killWpoint(){
 	
 	for id in $(pidof $wpoint)
 	do
-		kill -9 $id
+		kill -1 $id
 	done
 
 }

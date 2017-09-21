@@ -61,7 +61,7 @@ function killWpoint(){
 
 	for id in $(pidof $wpoint)
 	do
-		kill -9 $id
+		kill -1 $id
 	done
 
 }
@@ -130,11 +130,11 @@ function sync_each_Task_Generator_onCAGMA(){
 function run_experiment(){
 	
 	# sync each task generator
-	sync_each_Task_Generator
+#	sync_each_Task_Generator
 
 	# initialize
 	initMain 
-	expTime=60
+	expTime=30
 	spoint=0
 	prev=0
 
@@ -205,7 +205,7 @@ do
 		killWpoint
 		NRmainProg=`pgrep FixedAccMem | wc -l`
 	done
-
+	echo "ans: $NRmainProg"
 	# sync
 	echo "waitfor iops"
 	sleep 10	
