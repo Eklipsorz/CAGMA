@@ -18,11 +18,13 @@ static struct timeval runth_s,runth_e;
 extern void Timediff(struct timeval *src,struct timeval *des,int type);
 extern void Timeadd(struct timeval *src,struct timeval *des);
 
-
+/* set a callback function of signal sighup */
+/* when a signal is sent to here, the task is allowed to exit the loop */
 void sighup()
 {
 	ready_to_exit = 1;	
 }
+
 /* set a callback function of a timer */ 
 /* 
  * When this function is called, it calculates its residence time and 
@@ -90,7 +92,9 @@ int main(int argc, char *argv[])
 	/* set a timer to periodically collect the data */
 	setitimer(ITIMER_REAL,&timer,NULL);
 	
+	/* set a callback function to the function sighup */
 	signal(SIGHUP,sighup);	
+
 	/* set the memory usage for each memor-bound task */
 	mUsage = 49152; 	/* This value is in kb unit */	
 	
