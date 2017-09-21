@@ -127,43 +127,56 @@ function sync_each_Task_Generator_onCAGMA(){
 }
 
 
+# run multiple programs according to the settings of task
+function run_experiment(){
 
-function begin_to_exper(){
-
-	
+	# sync each task generator	
 	sync_each_Task_Generator
 
+
+	# initialize
 	initMain
 	expTime=30
 	prev=0
 
-	sar -b -t 3 110 >> ./result/MEM_IOPS.$1 & 	
+	# set the length of period of the tools for collecting IOPS
+	sar -b -t 3 110 >> ./result/MEM_IOPS.$1 & 
+	# set the suffex of the file storing all data
 	./FileSuffexSetter $1
 
+	# simulate different memory usages 
 	for i in $(seq 1 6)
 	do	
 
+		# records the beginning time
 		begin=`date +%s`
-		temest=${arrvm2[$i]}
 		diff=0
 		
+		# increases the number of tasks
+		temest=${arrvm2[$i]}
+	
 		result=$((temest-prev))
 		for j in $(seq 1 $result)
 		do
 			./$wpoint  &
 		done
 		prev=$temest
+
 		echo "enter $i/5, nrtask: $temest"
-	
+		
+		# waits for expTime seconds 
 		while [ "$diff" -le "$expTime" ]
 		do
+			# records the end time
 			end=`date +%s`
+			# calculate current difference between the begining time and the end time
 			diff=$((end-begin))
 		done
 	done
 }
 
-
+# set the action for each round
+# In each round, the system begins to initalize some modules and runs experiment.
 for i in $(seq 1 5)
 do
 
@@ -181,7 +194,7 @@ do
 	echo $i
 	# insert a module, which collects the residence time, into guest OS
 	insmod ./monitor/MemDataCollector.ko
-	begin_to_exper $i
+	run_experiment $i
 
 	# initialize the number of the main programs at the end of each round
 	echo "killing $wpoint process"
