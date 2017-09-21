@@ -3,7 +3,6 @@
 
 wpoint="FixedAccMem"
 
-nrround=5
 enable_test_CAGMA=0
 export LD_LIBRARY_PATH=/usr/lib
 
@@ -17,7 +16,6 @@ arrvm1[5]=10
 arrvm1[6]=10
 
 
-iter=0
 
 echo 3 > /proc/sys/vm/drop_caches
 trap trapContrC INT
@@ -52,22 +50,9 @@ function killMain(){
 	sarpid=$(pidof sar)
 	kill -9 $sarpid
 }
-function getNRmainProg(){
-	
-	NRmainProg=0
-	
-	for i in $(pidof FixedAccMem)
-	do
-		NRmainProg=$((NRmainProg+1))	
-	done 
-}
 
-
-function calc() { awk "BEGIN{print $*}"; }     # set float arithmetic function
 echo "begin"
 
-tempsum=0
-count=0
 function initMain(){
 
 	swapoff -a
