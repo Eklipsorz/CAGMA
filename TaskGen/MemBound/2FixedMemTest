@@ -194,6 +194,7 @@ do
 	echo $i
 	# insert a module, which collects the residence time, into guest OS
 	insmod ./monitor/MemDataCollector.ko
+	# begins to simulate an environment on which multiple programs runs 
 	run_experiment $i
 
 	# initialize the number of the main programs at the end of each round
