@@ -136,7 +136,7 @@ function run_experiment(){
 
 	# initialize
 	initMain
-	expTime=30
+	expTime=60
 	prev=0
 
 	# set the length of period of the tools for collecting IOPS

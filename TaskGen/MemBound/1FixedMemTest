@@ -130,11 +130,11 @@ function sync_each_Task_Generator_onCAGMA(){
 function run_experiment(){
 	
 	# sync each task generator
-#	sync_each_Task_Generator
+	sync_each_Task_Generator
 
 	# initialize
 	initMain 
-	expTime=30
+	expTime=60
 	spoint=0
 	prev=0
 

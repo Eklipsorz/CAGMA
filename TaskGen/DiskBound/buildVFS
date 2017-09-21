@@ -1,0 +1,9 @@
+#!/bin/bash 
+
+if [ -e "./myrandom" ]; then
+	echo "The file myrandom is here"
+else
+	echo "The file myrandom isn't exist"
+	echo "So, I'll make new one"
+	dd if=/dev/urandom of=./myrandom bs=10M count=100
+fi

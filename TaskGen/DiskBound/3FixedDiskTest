@@ -44,7 +44,7 @@ function trapContrC(){
 	# remove some modules
 	rmmod supCenter.ko
 	rmmod resetCMA.ko
-	rmmod DiskNotifier.ko
+	rmmod DiskDataCollector.ko
 	exit	
 }
 
@@ -181,7 +181,7 @@ do
 	echo "$i"
 	
 	# insert a module, which collects the residence time, into guest OS
-	insmod ./monitor/DiskNotifier.ko
+	insmod ./monitor/DiskDataCollector.ko
 	# begins to simulate an environment on which multiple programs runs 
 	run_experiment $i
 	
@@ -207,7 +207,7 @@ do
 	echo "waitfor iops......done"
 	
 	# remove module
-	rmmod DiskNotifier.ko
+	rmmod DiskDataCollector.ko
 	
 	
 	# sync other task generator 

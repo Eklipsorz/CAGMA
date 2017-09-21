@@ -176,7 +176,7 @@ int main()
 		buff_write[i] = '1' + i % 26;
 
 	/* require for accessing the disk */
-	if( (fd = open("../../myrandom",O_RDWR | O_DIRECT | O_SYNC | O_RSYNC)) == -1 )
+	if( (fd = open("./myrandom",O_RDWR | O_DIRECT | O_SYNC | O_RSYNC)) == -1 )
 	{
 		//O_DIRECT
 		printf("The file isn't exist\n");
