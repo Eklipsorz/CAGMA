@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "Current hostname: $(hostname)"
+read -p "R u sure this machine u want to shutdown/reboot? (yes/other) " ans
+if [ "$ans" = "yes" ]; then
+	/usr/sbin/sinit $1
+else 
+	echo "Okay, i sure u forget what this machine is"
+fi
+
