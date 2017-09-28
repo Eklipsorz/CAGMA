@@ -1,0 +1,4 @@
+# Created by anaconda
+NETWORKING=yes
+HOSTNAME=hypervisor
+GATEWAY=203.64.125.254
