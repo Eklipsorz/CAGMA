@@ -1,0 +1,35 @@
+--- libxl_dom2.c	2017-09-29 00:23:21.039716702 +0800
++++ libxl_dom.c	2017-09-29 00:17:01.085716702 +0800
+@@ -526,7 +526,7 @@
+     }
+ 
+     /* allocate some memory to 18 + number of max_vcpus x 2 entries */ 
+-    ents = libxl__calloc(gc, 12 + (info->max_vcpus * 2) , sizeof(char *));
++    ents = libxl__calloc(gc, 12 + (info->max_vcpus * 2) + 6, sizeof(char *));
+     ents[0] = "memory/static-max";
+     ents[1] = GCSPRINTF("%"PRId64, info->max_memkb);
+     ents[2] = "memory/target";
+@@ -553,6 +553,12 @@
+     * 	0: represents that there is no any memory for allocating memory to vm
+     * 	1: represents that there are sufficient memory
+     */ 
++    ents[12+(i*2)]="memory/CMA";
++    ents[12+(i*2)+1] = GCSPRINTF("%lld", (long long int) -1);
++    ents[12+(i+1)*2]="memory/AVM";
++    ents[12+(i+1)*2+1] = GCSPRINTF("%lld", (long long int) 0);
++    ents[12+(i+2)*2]="memory/warning";
++    ents[12+(i+2)*2+1] = GCSPRINTF("%d", 1);
+ 
+     dom_path = libxl__xs_get_dompath(gc, domid);
+     if (!dom_path) {
+@@ -566,6 +572,10 @@
+     libxl__xs_writev(gc, t, dom_path, ents);
+ 	
+ 	/* give each vm read/write permissions to access this four entries */ 
++    xs_set_permissions(ctx->xsh,t,libxl__sprintf(gc,"%s/memory/target",dom_path),rwperm,2); 
++    xs_set_permissions(ctx->xsh,t,libxl__sprintf(gc,"%s/memory/CMA",dom_path),rwperm,2); 
++    xs_set_permissions(ctx->xsh,t,libxl__sprintf(gc,"%s/memory/AVM",dom_path),rwperm,2); 
++    xs_set_permissions(ctx->xsh,t,libxl__sprintf(gc,"%s/memory/warning",dom_path),rwperm,2); 
+     libxl__xs_writev(gc, t, dom_path, local_ents);
+     libxl__xs_writev(gc, t, vm_path, vms_ents);
+ 
