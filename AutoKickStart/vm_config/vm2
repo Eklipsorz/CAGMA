@@ -1,0 +1,12 @@
+name = "vm2"
+#kernel = "/home/dwing/kernel/vmlinuz"
+#ramdisk = "/home/dwing/kernel/initrd.img.b"
+#extra = "ks=file:/install.cfg"
+memory = 512
+maxmem = 1500
+vif = ["mac=00:16:3e:00:00:22,bridge=xenbr0"]
+vcpus = 1
+disk = ['tap:aio:/home/dwing/drive/vm2.img,xvda,w']
+bootloader = "pygrub"
+on_reboot = "restart"
+on_crash = "destroy"

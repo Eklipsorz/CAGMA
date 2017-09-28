@@ -1,0 +1,12 @@
+name = "vm3"
+#kernel = "/home/dwing/kernel/vmlinuz"
+#ramdisk = "/home/dwing/kernel/initrd.img.b"
+#extra = "ks=file:/install.cfg"
+memory = 512
+maxmem = 3000
+vif = ["mac=00:16:3e:00:00:21,bridge=xenbr0"]
+vcpus = 1
+disk = ['tap:aio:/home/dwing/drive/vm3.img,xvda,w']
+bootloader = "pygrub"
+#on_reboot = "restart"
+#on_crash = "preserve"
