@@ -19,4 +19,4 @@ Our proposed CAGAM has been implemented in Xen 4.2.2 and a series of experiments
 
 
 # References
-Jun Wu and Shou-Liang Sun. "A Dynamic Memory Allocation Approach for Virtualization Platforms." Big Data Security on Cloud (BigDataSecurity), IEEE International Conference on High Performance and Smart Computing (HPSC), and IEEE International Conference on Intelligent Data and Security (IDS), 2017 IEEE 3rd International Conference on. IEEE, 2017.
+1. Jun Wu and Shou-Liang Sun. "A Dynamic Memory Allocation Approach for Virtualization Platforms." Big Data Security on Cloud (BigDataSecurity), IEEE International Conference on High Performance and Smart Computing (HPSC), and IEEE International Conference on Intelligent Data and Security (IDS), 2017 IEEE 3rd International Conference on. IEEE, 2017.
