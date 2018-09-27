@@ -10,4 +10,4 @@ The main points for the toolkits are followings:
 
 1. run "make" command
 2. transfer "enable\_test\_CAGMA" in 3FixedDiskTest from 0 to 1
-3. run 3FixedDiskTest to generate diskbound workload
+3. run 3FixedDiskTest to generate disk-bound workload
