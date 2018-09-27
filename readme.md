@@ -11,7 +11,7 @@ This project consists of VM build tools, which can quickly create a VM image and
 Under CAGMA, a critical memory amount (CMA) is calculated for each VM periodically and at the time a swapping event is occurred or virtual memory is enabled. The allocated memory of each VM is then adjusted according to its critical memory amount so that the number of I/O requests generated for virtual memory could be reduced greatly and the performance degradation could be prevented. The allocation periodically calculates CMA for each VM, determines which VM needs more memory and doesn't need more with CMA and finally adjust their memory amount according to CMA. Except for periodical memory adjustment, we also provide an emergency allocation: when there is performance degradation due to lack of memory before the period, the system directly adjusts the memory and calculates the CMA.
 
 For implementation for CAGMA, there are 2 following targets:
-* a monitor in host computer to periodically calculate CMA for each VM and adjust memory amount according to CMA : we use xenstore damone, self-made daemon and balloon driver to implement.
+* a monitor in host computer to periodically calculate CMA for each VM and adjust memory amount according to CMA : we use *xenstore damone, self-made daemon and balloon driver* to implement.
 
 
 
