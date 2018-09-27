@@ -37,7 +37,8 @@ To better observe, we set the <srong> residence time and I/O activities per seco
 The implementation for this part store in <strong> benchmark </strong> dir.
 
 # The todo list
-1. 
+1. optimizate the communication between domainU and hypervisor
+2. optimizate the mechanism for releasing memory 
 
 
 # References
