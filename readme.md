@@ -1,7 +1,12 @@
-# CAGMA Project is to solve performance degradation when insufficient memory problem occurs
+#Background
 
-大标题
-====
+
+#CAGMA
+
+
+#The workload generator
+
+
 
 # The Prograss of this project: 
 1. Build AutoKickStart to automatically download clean kernel 		....... 01/30/2017 finished
