@@ -23,7 +23,12 @@ We use a set of self-made daemon, xenstore daemon, kswap daemon and balloon driv
 
 # The benchmark tools
 
-Our proposed CAGAM has been implemented in Xen 4.2.2 and a series of experiments have been conducted for which some encouraging results were obtained.
+Our proposed CAGAM has been implemented in Xen 4.2.2 and use self-made benchmark tools to assess capability of CAGMA. We set
+the <srong> residence time and I/O activities per second (IOPS) </strong> as performance metrics. The residence time and IOPS are represented to the average time all task reside in the system and the number of I/O requests been done per second. The residence time is growing as the IOPS is being increased or more I/O requests have not been done.
+
+In this benchmark tools, we inoke multiple processes with signal handling to generate two types of workload to test: memory-bound worklord and disk-bound workload. Each process periodically write the collected metrics into the <strong> buffer in 
+/proc dir </strong> and 
+
 
 # The todo list
 1. 
