@@ -1,6 +1,6 @@
 # The toolkits 
 
-It simulates disk-bound workload with some memory-bound task. 
+It can generate disk-bound workload with some memory-bound task. 
 (The number of disk-bound task is more than the number of memory-bound task)
 
 # Usage
