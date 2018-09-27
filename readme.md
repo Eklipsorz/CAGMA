@@ -28,7 +28,7 @@ This benchmark tools is designed to assess capability of CAGMA based on a testbe
 To better observe, we set the <srong> residence time and I/O activities per second (IOPS) </strong> as performance metrics. The residence time and IOPS are represented to the average time all task reside in the system and the number of I/O requests been done per second. The residence time is growing as the IOPS is being increased or more I/O requests have not been done.
 
 In this benchmark tools, we inoke multiple processes with signal handling to generate two types of workload to test: memory-bound worklord and disk-bound workload. Each process periodically write the collected metrics into the <strong> buffer in 
-/proc dir </strong> and the event-driven driver of the buffer collects these data from that. Additionally, two of the VMs are tested under memory-bound workload and the other is tested under disk-bound workload.
+/proc dir </strong> and the event-driven driver of the buffer collects these data from that. 
 
 The implementation for this part store in <strong> benchmark </strong> dir.
 
