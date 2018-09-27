@@ -23,10 +23,6 @@ We use a set of self-made daemon, xenstore daemon, kswap daemon and balloon driv
 
 # The benchmark tools
 
-
-This benchmark
-
-
 This benchmark tools is designed to assess capability of CAGMA based on a testbed. The testbed was built on a server with two dual-core processors (i.e., two Intel Core 2 Duo proces- sors ). The frequency of each processor is 2333MHz, and each has 2MB cache. The memory size is 4096MB and the OS is CentOS 7 64-bit (kernel version is Linux 4.2.2). Our proposed CAGMA has been implemented in Xen 4.2.2. The guest OS of each VM is CentOS 6 (kernel version is also Linux 4.2.2) and number of VM is 3.
 
 To better observe, we set the <srong> residence time and I/O activities per second (IOPS) </strong> as performance metrics. The residence time and IOPS are represented to the average time all task reside in the system and the number of I/O requests been done per second. The residence time is growing as the IOPS is being increased or more I/O requests have not been done.
