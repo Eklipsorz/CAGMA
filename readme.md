@@ -8,7 +8,10 @@ This project consists of VM build tools, which can quickly create a VM image and
 
 # CAGMA
 
-Under CAGMA, a critical memory amount is calculated for each VM periodically and at the time a swapping event is occurred or virtual memory is enabled. The allocated memory of each VM is then adjusted according to its critical memory amount so that the number of I/O requests generated for virtual memory could be reduced greatly and the performance degradation could be prevented.
+Under CAGMA, a critical memory amount is calculated for each VM periodically and at the time a swapping event is occurred or virtual memory is enabled. The allocated memory of each VM is then adjusted according to its critical memory amount so that the number of I/O requests generated for virtual memory could be reduced greatly and the performance degradation could be prevented. 
+
+For development for CAGMA, there are 
+## 1. Build a monitor with xenstore and self-made daemon to periodically obtain the necessary information in VM and use balloon driver to allocate some memory to some VMs according to that.
 
 # The benchmark tools
 
