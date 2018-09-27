@@ -4,14 +4,14 @@
 
 
 # The Prograss of this project: 
-1. Build AutoKickStart to automatically download clean kernel 
-	      and update the kernel with modified install.cfg 		....... 01/30/2017 finished
-2. Build MemEventTrigger to monitor 'memory/target' and 'mem-
-	      ory/warning' in Xenstore					....... 02/28/2017 finished
+1. Build AutoKickStart to automatically download clean kernel 		....... 01/30/2017 finished
+   and update the kernel with modified install.cfg 			
+2. Build MemEventTrigger to monitor 'memory/target' and 'mem-		....... 02/28/2017 finished
+   ory/warning' in Xenstore						
 
-3. Modify Kernel 4.2.2 for checking AVM and UMA for each VM p
-	      eriodically and adjusting memory of each VM acc
-	      ording to that :						....... 03/10/2017 finished
+3. Modify Kernel 4.2.2 for checking AVM and UMA for each VM 		....... 03/10/2017 finished
+   periodically and adjusting memory of each VM according to 
+   that :						
 	a. CMA Watcher
 	b. Memory Adjuster		
  
