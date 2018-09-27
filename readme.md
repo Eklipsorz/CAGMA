@@ -1,5 +1,5 @@
 # Background
-
+Virtualization technology is the foundation of cloud computing because of these advantages. Recently, it is increasingly being used in applica- tion in cloud computing. For example, Google Compute Engine. Despite the fact that virtualization technique seems to be pretty practical, it may has a performance degradation problem resulted from insufficient memory between VMs. In virtualization platform, a VM enables virtual memory technology to generate a lot of disk-bound tasks to access as a physical machine does when it occurs insufficient memory, while these disk-bound tasks degrade the performance of the VM. However, if there some other VMs or a single VM accessing disk, a VM enabling virtual memory inference another VM because of shared disk.
 
 # CAGMA
 
