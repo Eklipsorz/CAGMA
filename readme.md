@@ -13,11 +13,7 @@ Under CAGMA, a critical memory amount (CMA) is calculated for each VM periodical
 For implementation for CAGMA, there are 2 following targets:
 * a monitor in host computer to periodically calculate CMA for each VM and adjust memory amount according to CMA : we use *xenstore damone, self-made daemon and balloon driver* to implement.
 
-
-
-* Build a monitor with xenstore and self-made daemon to periodically obtain the necessary information in VM and use balloon driver to allocate some memory to some VMs according to that.
-* Build an emergency allocation with kswapd: when there is performance degradation due to lack of memory before the period, VM invokes balloon driver with kswapd to increase its memory amount.
-
+* an emergency allocation: when there is performance degradation due to lack of memory before the period, the system need to adjust directly memory and calculate CMA: we use *kswap daemon and balloon driver* to implement.
 
 ## 
 
