@@ -1,10 +1,10 @@
-#Background
+# Background
 
 
-#CAGMA
+# CAGMA
 
 
-#The workload generator
+# The workload generator
 
 
 
