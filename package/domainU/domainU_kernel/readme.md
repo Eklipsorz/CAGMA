@@ -4,5 +4,7 @@ Everything <strong>kernel</strong> dir is coincident with directory structure in
 you need to do the following:
 
 1. replace the corresponding file according to filename in <strong>kernel</strong> dir or use patch
+2. replace the .config with config file
+3. recompile ur kernel and reboot
 
 
